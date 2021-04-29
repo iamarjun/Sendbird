@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav">
+    android:id="@+id/nav"
+    app:startDestination="@id/chatDetailFragment">
 
+    <fragment
+        android:id="@+id/chatDetailFragment"
+        android:name="com.arjun.sendbird.ChatDetailFragment"
+        android:label="ChatDetailFragment" />
 </navigation>
