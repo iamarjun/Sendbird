@@ -49,7 +49,7 @@ android {
 
 dependencies {
 
-    implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05")
 
     implementation("androidx.core:core-ktx:1.3.2")
     implementation("com.google.android.material:material:1.3.0")
@@ -78,4 +78,8 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.35")
 
     implementation("com.google.accompanist:accompanist-glide:0.8.0")
+    implementation("com.google.accompanist:accompanist-insets:0.8.0")
+
+    implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.160")
+
 }
