@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.viewModels
+import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
 
 
+@ExperimentalAnimatedInsets
 class ChatDetailFragment : BaseFragment() {
 
     private val viewModel by viewModels<ChatDetailViewModel>()
