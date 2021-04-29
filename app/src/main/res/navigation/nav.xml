@@ -6,6 +6,6 @@
 
     <fragment
         android:id="@+id/chatDetailFragment"
-        android:name="com.arjun.sendbird.ChatDetailFragment"
+        android:name="com.arjun.sendbird.ui.chatDetail.ChatDetailFragment"
         android:label="ChatDetailFragment" />
 </navigation>

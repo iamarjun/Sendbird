@@ -1,4 +1,4 @@
-package com.arjun.sendbird
+package com.arjun.sendbird.ui.chatDetail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.viewModels
+import com.arjun.sendbird.R
+import com.arjun.sendbird.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
 

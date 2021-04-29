@@ -1,4 +1,4 @@
-package com.arjun.sendbird
+package com.arjun.sendbird.ui.chatDetail
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

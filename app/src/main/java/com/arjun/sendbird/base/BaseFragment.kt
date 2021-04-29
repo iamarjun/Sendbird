@@ -1,4 +1,4 @@
-package com.arjun.sendbird
+package com.arjun.sendbird.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import com.arjun.sendbird.LocalBackPressedDispatcher
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
