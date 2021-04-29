@@ -76,7 +76,10 @@ class ChatDetailFragment : BaseFragment() {
                 }
 
                 val query = remember { mutableStateOf("") }
-
+                val onClick = {
+                    viewModel.add(query.value)
+                    query.value = ""
+                }
                 OutlinedTextField(
                     value = query.value,
                     onValueChange = { newValue ->
@@ -97,7 +100,7 @@ class ChatDetailFragment : BaseFragment() {
                     },
                     trailingIcon = {
                         IconButton(
-                            onClick = { viewModel.add(query.value) }
+                            onClick = onClick
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Send,
@@ -116,9 +119,7 @@ class ChatDetailFragment : BaseFragment() {
                         imeAction = ImeAction.Done,
                     ),
                     keyboardActions = KeyboardActions(
-                        onDone = {
-                            viewModel.add(query.value)
-                        }
+                        onDone = { onClick() }
                     )
                 )
 
