@@ -82,4 +82,6 @@ dependencies {
 
     implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.160")
 
+    implementation("com.jakewharton.timber:timber:4.7.1")
+
 }
