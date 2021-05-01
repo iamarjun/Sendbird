@@ -3,7 +3,6 @@ package com.arjun.sendbird.ui.login
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -48,7 +47,9 @@ class LoginFragment : BaseFragment() {
         when (userExist) {
             is Resource.Error -> {
                 LaunchedEffect(userExist) {
-                    scaffoldState.snackbarHostState.showSnackbar(userExist?.e?.message ?: "Something went wrong")
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        userExist?.e?.message ?: "Something went wrong"
+                    )
                 }
             }
             is Resource.Loading -> {
@@ -89,7 +90,7 @@ class LoginFragment : BaseFragment() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
-            TextField(
+            OutlinedTextField(
                 value = textFieldValue,
                 onValueChange = onTextFieldValueChange,
                 modifier = Modifier
@@ -108,13 +109,6 @@ class LoginFragment : BaseFragment() {
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done,
                 ),
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = Color.LightGray,
-                )
             )
 
             Button(

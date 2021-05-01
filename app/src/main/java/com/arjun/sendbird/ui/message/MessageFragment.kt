@@ -3,10 +3,12 @@ package com.arjun.sendbird.ui.message
 import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -159,12 +161,17 @@ class MessageFragment : BaseFragment() {
                 }
             }
 
-            OutlinedTextField(
+            TextField(
                 value = message,
                 onValueChange = onMessageChange,
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black,
+                        shape = CircleShape
+                    )
                     .navigationBarsWithImePadding()
                     .constrainAs(textField) {
                         top.linkTo(lazyColumn.bottom)
@@ -196,6 +203,13 @@ class MessageFragment : BaseFragment() {
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done,
                 ),
+                shape = RoundedCornerShape(24.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    focusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    backgroundColor = Color.Transparent,
+                )
             )
         }
     }
