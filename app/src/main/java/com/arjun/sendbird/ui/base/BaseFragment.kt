@@ -16,8 +16,10 @@ import com.arjun.sendbird.LocalBackPressedDispatcher
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
+import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalAnimatedInsets
+@AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
 
     @Composable

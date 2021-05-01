@@ -29,8 +29,7 @@
         <action
             android:id="@+id/action_channelListFragment_to_chatDetailFragment"
             app:destination="@id/chatDetailFragment"
-            app:popUpTo="@id/channelListFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/splashFragment"
