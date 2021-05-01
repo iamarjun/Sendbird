@@ -40,10 +40,6 @@ class MessageDataSource @Inject constructor(
 
     suspend fun sendMessage(channelUrl: String, message: String): BaseMessage {
         val channel = getChannel(channelUrl)
-        val params = UserMessageParams()
-            .setMessage(message)
-            .setCustomType("text")
-
 
         return suspendCancellableCoroutine { continuation ->
             val messageHandler = SendUserMessageHandler { message, error ->
@@ -52,7 +48,7 @@ class MessageDataSource @Inject constructor(
                 }
                 continuation.resume(message)
             }
-            channel.sendUserMessage(params, messageHandler)
+            channel.sendUserMessage(message, messageHandler)
         }
     }
 

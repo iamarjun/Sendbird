@@ -1,16 +1,19 @@
 package com.arjun.sendbird.ui.message
 
+import android.os.Bundle
+import android.view.View
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,25 +23,36 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
-import com.arjun.sendbird.MainViewModel
 import com.arjun.sendbird.R
+import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
+import com.arjun.sendbird.util.isMe
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.sendbird.android.BaseMessage
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @ExperimentalAnimatedInsets
 class MessageFragment : BaseFragment() {
 
     private val args by navArgs<MessageFragmentArgs>()
-
+    private val channelUrl by lazy { args.channelUrl }
     private val viewModel by viewModels<MessageViewModel>()
-    private val mainViewModel by activityViewModels<MainViewModel>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.loadMessages(channelUrl)
+    }
 
     @Composable
     override fun ToolBar() = TopAppBar {
@@ -55,17 +69,42 @@ class MessageFragment : BaseFragment() {
 
     @Composable
     override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+        val messages by viewModel.messages.observeAsState(emptyList())
 
-        viewModel.loadMessages(args.channelUrl)
+        val messageToSend = remember {
+            mutableStateOf("")
+        }
 
+        fun onMessageChange(newMessage: String) {
+            messageToSend.value = newMessage
+        }
+
+        ChatScreen(
+            paddingValues = paddingValues,
+            messages = messages,
+            message = messageToSend.value,
+            onMessageChange = ::onMessageChange,
+            onSendClick = {
+                viewModel.sendMessage(channelUrl, messageToSend.value)
+                onMessageChange("")
+            }
+        )
+    }
+
+    @Composable
+    private fun ChatScreen(
+        paddingValues: PaddingValues,
+        messages: List<BaseMessage>,
+        message: String,
+        onMessageChange: (String) -> Unit,
+        onSendClick: () -> Unit,
+    ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues)
         ) {
             val (lazyColumn, textField) = createRefs()
-
-            val messages = viewModel.messages.value
 
             LazyColumn(
                 modifier = Modifier
@@ -80,25 +119,21 @@ class MessageFragment : BaseFragment() {
                 reverseLayout = true
             ) {
 
-                messages?.let {
-                    items(it) { message ->
-                        Text(text = message.message)
-                    }
+                items(messages) { message ->
+                    Text(
+                        text = message.message,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        textAlign = if (message.isMe()) TextAlign.End else TextAlign.Start,
+                        fontSize = 16.sp
+                    )
                 }
-
-
             }
 
-            val query = remember { mutableStateOf("") }
-            val onClick = {
-                viewModel.add(query.value)
-                query.value = ""
-            }
             OutlinedTextField(
-                value = query.value,
-                onValueChange = { newValue ->
-                    query.value = newValue
-                },
+                value = message,
+                onValueChange = onMessageChange,
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
@@ -114,7 +149,8 @@ class MessageFragment : BaseFragment() {
                 },
                 trailingIcon = {
                     IconButton(
-                        onClick = onClick
+                        onClick = onSendClick,
+                        enabled = message.isNotEmpty()
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Send,
@@ -132,12 +168,39 @@ class MessageFragment : BaseFragment() {
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done,
                 ),
-                keyboardActions = KeyboardActions(
-                    onDone = { onClick() }
-                )
             )
-
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
+        viewModel.channelState.flowWithLifecycle(lifecycle).onEach { state ->
+            when (state) {
+                is ChannelState.ChannelUpdated -> {
+
+                }
+                ChannelState.DeliveryReceiptUpdated -> {
+
+                }
+                is ChannelState.MessageAdded -> {
+                    viewModel.addMessage(state.message)
+                }
+                is ChannelState.MessageDeleted -> {
+
+                }
+                is ChannelState.MessageUpdated -> {
+
+                }
+                ChannelState.ReadReceiptUpdated -> {
+
+                }
+                is ChannelState.TypingStatusUpdated -> {
+
+                }
+            }
+        }.launchIn(lifecycleScope)
+
+    }
 }
