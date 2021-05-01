@@ -1,6 +1,7 @@
 package com.arjun.sendbird
 
 import com.arjun.sendbird.cache.UserManager
+import com.arjun.sendbird.util.ACCESS_TOKEN
 import com.sendbird.android.SendBird
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -20,7 +21,7 @@ class ConnectionManager @Inject constructor(
     suspend fun connect(userId: String): Boolean {
 
         val exist: Boolean = suspendCancellableCoroutine { continuation ->
-            SendBird.connect(userId, "615e13d4bb6f5e0d2815e6182e11c1c619affb14") { user, error ->
+            SendBird.connect(userId, ACCESS_TOKEN) { user, error ->
                 if (error != null) {
                     Timber.e(error)
 
