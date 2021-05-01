@@ -63,6 +63,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.0.0-beta05")
     implementation("androidx.compose.material:material-icons-extended:1.0.0-beta05")
     implementation("androidx.activity:activity-compose:1.3.0-alpha07")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta05")
+
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha01")
 
@@ -84,6 +86,11 @@ dependencies {
 
     implementation("com.jakewharton.timber:timber:4.7.1")
 
-    implementation ("androidx.datastore:datastore-preferences:1.0.0-beta01")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0-alpha01")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0-alpha01")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha01")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0-beta01")
 
 }
