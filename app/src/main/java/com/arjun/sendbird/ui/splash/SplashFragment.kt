@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -20,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import com.arjun.sendbird.MainViewModel
 import com.arjun.sendbird.R
 import com.arjun.sendbird.cache.UserManager
+import com.arjun.sendbird.model.Resource
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,17 +52,25 @@ class SplashFragment : BaseFragment() {
                     findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToLoginFragment())
             }.launchIn(lifecycleScope)
 
-        viewModel.userExist.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
-            .onEach {
-                if (it) {
-                    findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToChannelListFragment())
-                }
-
-            }.launchIn(lifecycleScope)
     }
 
     @Composable
     override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+
+        val userExist by viewModel.userExist.observeAsState()
+
+        when (userExist) {
+            is Resource.Error -> {
+                LaunchedEffect(userExist) {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        userExist?.e?.message ?: "Something went wrong"
+                    )
+                }
+            }
+            is Resource.Loading -> {
+            }
+            is Resource.Success -> findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToChannelListFragment())
+        }
 
         Column(
             modifier = Modifier.fillMaxSize(),

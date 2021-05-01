@@ -1,17 +1,13 @@
 package com.arjun.sendbird.ui.login
 
-import android.os.Bundle
-import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,15 +16,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.arjun.sendbird.MainViewModel
+import com.arjun.sendbird.model.Resource
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
@@ -36,6 +28,8 @@ import kotlinx.coroutines.launch
 class LoginFragment : BaseFragment() {
 
     private val viewModel by activityViewModels<MainViewModel>()
+    private val progressVisibility = mutableStateOf(false)
+
 
     @Composable
     override fun ToolBar() {
@@ -46,15 +40,47 @@ class LoginFragment : BaseFragment() {
     override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
         val snackBarScope = rememberCoroutineScope()
 
-        val textField = remember {
-            mutableStateOf("")
-        }
-        val textFieldValue = textField.value
+        val userId by viewModel.userId.observeAsState("")
+        val userExist by viewModel.userExist.observeAsState()
 
-        val progressVisibility = remember {
-            mutableStateOf(false)
+        progressVisibility.value = userExist is Resource.Loading
+
+        when (userExist) {
+            is Resource.Error -> {
+                LaunchedEffect(userExist) {
+                    scaffoldState.snackbarHostState.showSnackbar(userExist?.e?.message ?: "Something went wrong")
+                }
+            }
+            is Resource.Loading -> {
+            }
+            is Resource.Success -> findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToChannelListFragment())
         }
 
+        LoginScreen(
+            paddingValues = paddingValues,
+            textFieldValue = userId,
+            onTextFieldValueChange = viewModel::onUserIdChange,
+            onConnectClick = {
+                if (userId.isEmpty() || userId.length < 6) {
+                    snackBarScope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar("Please enter a user id")
+                    }
+                    return@LoginScreen
+                }
+                viewModel.login(userId = userId)
+            },
+            progressVisibility = progressVisibility.value
+        )
+    }
+
+    @Composable
+    private fun LoginScreen(
+        paddingValues: PaddingValues,
+        textFieldValue: String,
+        onTextFieldValueChange: (String) -> Unit,
+        onConnectClick: () -> Unit,
+        progressVisibility: Boolean,
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -65,9 +91,7 @@ class LoginFragment : BaseFragment() {
 
             TextField(
                 value = textFieldValue,
-                onValueChange = {
-                    textField.value = it
-                },
+                onValueChange = onTextFieldValueChange,
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth(),
@@ -94,39 +118,16 @@ class LoginFragment : BaseFragment() {
             )
 
             Button(
-                onClick = {
-                    if (textFieldValue.isEmpty()) {
-                        snackBarScope.launch {
-                            scaffoldState.snackbarHostState.showSnackbar("Please enter a user id")
-                        }
-                        return@Button
-                    }
-
-                    viewModel.login(textFieldValue)
-                    progressVisibility.value = true
-                },
+                onClick = onConnectClick,
             ) {
-                Text(text = "Login")
+                Text(text = "Connect")
             }
 
-            AnimatedVisibility(visible = progressVisibility.value) {
+            AnimatedVisibility(visible = progressVisibility) {
                 CircularProgressIndicator(
                     modifier = Modifier.padding(16.dp)
                 )
             }
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        viewModel.userExist.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
-            .onEach {
-                if (it) {
-                    findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToChannelListFragment())
-                }
-
-            }.launchIn(lifecycleScope)
-
     }
 }
