@@ -1,4 +1,4 @@
-package com.arjun.sendbird.ui.chatDetail
+package com.arjun.sendbird.ui.message
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -33,11 +33,11 @@ import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
 
 @ExperimentalAnimatedInsets
-class ChatDetailFragment : BaseFragment() {
+class MessageFragment : BaseFragment() {
 
-    private val args by navArgs<ChatDetailFragmentArgs>()
+    private val args by navArgs<MessageFragmentArgs>()
 
-    private val viewModel by viewModels<ChatDetailViewModel>()
+    private val viewModel by viewModels<MessageViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
 
     @Composable

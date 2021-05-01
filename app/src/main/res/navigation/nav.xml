@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/chatDetailFragment"
-        android:name="com.arjun.sendbird.ui.chatDetail.ChatDetailFragment"
+        android:name="com.arjun.sendbird.ui.message.MessageFragment"
         android:label="ChatDetailFragment" >
         <argument
             android:name="channelUrl"
