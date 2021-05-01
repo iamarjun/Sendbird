@@ -11,7 +11,7 @@ interface ChatRepository {
 
     suspend fun loadChannels(): List<GroupChannel>
 
-    fun observeChannels(handlerId: String): Flow<ChannelState>
+    fun observeChannels(): Flow<ChannelState>
 
     suspend fun loadMessages(channelUrl: String, createdAt: Long? = null): List<BaseMessage>
 

@@ -38,7 +38,7 @@ class ChannelDataSource @Inject constructor() {
     }
 
     @ExperimentalCoroutinesApi
-    fun observeChannels(handlerId: String): Flow<ChannelState> {
+    fun observeChannels(): Flow<ChannelState> {
         return callbackFlow {
             val channelHandler = object : ChannelHandler() {
                 override fun onMessageReceived(baseChannel: BaseChannel, message: BaseMessage) {
@@ -71,14 +71,15 @@ class ChannelDataSource @Inject constructor() {
                 }
             }
 
-            SendBird.addChannelHandler(handlerId, channelHandler)
+            SendBird.addChannelHandler(CHANNEL_HANDLER_ID, channelHandler)
 
-            awaitClose { SendBird.removeChannelHandler(handlerId) }
+            awaitClose { SendBird.removeChannelHandler(CHANNEL_HANDLER_ID) }
         }
     }
 
     companion object {
         private const val CHANNEL_LIST_LIMIT = 15
+        private const val CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_DETAIL"
         private const val CHANNEL_MESSAGE_LIMIT = 20
     }
 }

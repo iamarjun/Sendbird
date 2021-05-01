@@ -23,8 +23,8 @@ class ChatRepositoryImpl @Inject constructor(
         channelDataSource.loadChannels()
 
     @ExperimentalCoroutinesApi
-    override fun observeChannels(handlerId: String): Flow<ChannelState> =
-        channelDataSource.observeChannels(handlerId)
+    override fun observeChannels(): Flow<ChannelState> =
+        channelDataSource.observeChannels()
 
     override suspend fun sendMessage(channelUrl: String, message: String): BaseMessage =
         messageDataSource.sendMessage(channelUrl, message)
