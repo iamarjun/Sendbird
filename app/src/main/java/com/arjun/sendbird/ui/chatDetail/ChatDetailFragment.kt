@@ -23,109 +23,121 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
+import com.arjun.sendbird.MainViewModel
 import com.arjun.sendbird.R
-import com.arjun.sendbird.base.BaseFragment
+import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
-
 
 @ExperimentalAnimatedInsets
 class ChatDetailFragment : BaseFragment() {
 
+    private val args by navArgs<ChatDetailFragmentArgs>()
+
     private val viewModel by viewModels<ChatDetailViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
 
     @Composable
-    override fun MainContent() {
-        Scaffold(
-            topBar = {
-                TopAppBar {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .size(54.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(text = "Sendbird Chat App")
-                }
-            }
-        ) { padding ->
-            ConstraintLayout(
+    override fun ToolBar() = TopAppBar {
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .size(54.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(text = "Sendbird Chat App")
+    }
+
+    @Composable
+    override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+
+        viewModel.loadMessages(args.channelUrl)
+
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues = paddingValues)
+        ) {
+            val (lazyColumn, textField) = createRefs()
+
+            val messages = viewModel.messages.value
+
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues = padding)
+                    .fillMaxWidth()
+                    .constrainAs(lazyColumn) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(textField.top)
+                        height = Dimension.fillToConstraints
+                    },
+                reverseLayout = true
             ) {
-                val (lazyColumn, textField) = createRefs()
 
-                val messages = viewModel.messages.value
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .constrainAs(lazyColumn) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(textField.top)
-                            height = Dimension.fillToConstraints
-                        }
-                ) {
-                    items(messages) { message ->
-                        Text(text = message)
+                messages?.let {
+                    items(it) { message ->
+                        Text(text = message.message)
                     }
                 }
 
-                val query = remember { mutableStateOf("") }
-                val onClick = {
-                    viewModel.add(query.value)
-                    query.value = ""
-                }
-                OutlinedTextField(
-                    value = query.value,
-                    onValueChange = { newValue ->
-                        query.value = newValue
-                    },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                        .navigationBarsWithImePadding()
-                        .constrainAs(textField) {
-                            top.linkTo(lazyColumn.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(parent.bottom)
-                        },
-                    label = {
-                        Text(text = "Enter Message")
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = onClick
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Send,
-                                contentDescription = "Search Icon",
-                            )
-                        }
-                    },
-                    textStyle = TextStyle(
-                        color = MaterialTheme.colors.onSurface,
-                        background = Color.Transparent,
-                    ),
-
-                    keyboardOptions = KeyboardOptions(
-                        autoCorrect = true,
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { onClick() }
-                    )
-                )
 
             }
+
+            val query = remember { mutableStateOf("") }
+            val onClick = {
+                viewModel.add(query.value)
+                query.value = ""
+            }
+            OutlinedTextField(
+                value = query.value,
+                onValueChange = { newValue ->
+                    query.value = newValue
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .navigationBarsWithImePadding()
+                    .constrainAs(textField) {
+                        top.linkTo(lazyColumn.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(parent.bottom)
+                    },
+                label = {
+                    Text(text = "Enter Message")
+                },
+                trailingIcon = {
+                    IconButton(
+                        onClick = onClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Send,
+                            contentDescription = "Search Icon",
+                        )
+                    }
+                },
+                textStyle = TextStyle(
+                    color = MaterialTheme.colors.onSurface,
+                    background = Color.Transparent,
+                ),
+
+                keyboardOptions = KeyboardOptions(
+                    autoCorrect = true,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { onClick() }
+                )
+            )
+
         }
     }
+
 }
