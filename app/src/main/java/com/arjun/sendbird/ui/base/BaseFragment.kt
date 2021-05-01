@@ -1,9 +1,13 @@
-package com.arjun.sendbird.base
+package com.arjun.sendbird.ui.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.ComposeView
@@ -17,7 +21,10 @@ import com.google.accompanist.insets.ViewWindowInsetObserver
 abstract class BaseFragment : Fragment() {
 
     @Composable
-    abstract fun MainContent()
+    abstract fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState)
+
+    @Composable
+    abstract fun ToolBar()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,9 +41,14 @@ abstract class BaseFragment : Fragment() {
                     LocalBackPressedDispatcher provides requireActivity().onBackPressedDispatcher,
                     LocalWindowInsets provides windowInsets,
                 ) {
-                    MainContent()
+                    val scaffoldState = rememberScaffoldState()
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        topBar = { ToolBar() }
+                    ) {
+                        MainContent(paddingValues = it, scaffoldState = scaffoldState)
+                    }
                 }
-
             }
         }
     }
