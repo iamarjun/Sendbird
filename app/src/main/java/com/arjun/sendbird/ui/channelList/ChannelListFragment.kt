@@ -5,20 +5,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.arjun.sendbird.R
 import com.arjun.sendbird.ui.base.BaseFragment
+import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @ExperimentalAnimatedInsets
 class ChannelListFragment : BaseFragment() {
@@ -41,9 +48,15 @@ class ChannelListFragment : BaseFragment() {
             channels?.let {
                 items(it) { channel ->
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                    val date: LocalDate =
+                        Instant.ofEpochMilli(channel.createdAt).atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
+                    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM, dd")
+
+                    Card(
+                        Modifier
+                            .padding(paddingValues = paddingValues)
                             .clickable {
                                 findNavController().navigate(
                                     ChannelListFragmentDirections.actionChannelListFragmentToChatDetailFragment(
@@ -51,31 +64,55 @@ class ChannelListFragment : BaseFragment() {
                                     )
                                 )
                             },
+                        elevation = 8.dp
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_sendbird),
-                            contentDescription = "Channel",
-                            Modifier.padding(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = channel.name,
-                            style = MaterialTheme.typography.h6,
+                        Row(
                             modifier = Modifier
-                                .align(Alignment.Top)
-                                .padding(top = 16.dp)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            Image(
+                                painter = rememberGlidePainter(request = channel.coverUrl),
+                                contentDescription = "Channel",
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .size(60.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                        Text(
-                            text = channel.createdAt.toString(),
-                            modifier = Modifier
-                                .align(Alignment.Bottom)
-                                .padding(bottom = 16.dp)
-                        )
+                            Column(
+                                verticalArrangement = Arrangement.SpaceAround,
+                            ) {
+                                Text(
+                                    text = channel.name,
+                                    style = MaterialTheme.typography.h6,
+                                    modifier = Modifier
+                                        .padding(top = 16.dp)
+                                )
+
+                                Text(
+                                    text = channel.lastMessage.message.toString(),
+                                    modifier = Modifier
+                                        .padding(bottom = 16.dp),
+                                    fontSize = 16.sp,
+                                    fontStyle = FontStyle.Italic
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Text(
+                                text = formatter.format(date),
+                                modifier = Modifier
+                                    .align(Alignment.Bottom)
+                                    .padding(16.dp),
+                                color = Color.LightGray
+                            )
+                        }
+
                     }
-
                 }
             }
 

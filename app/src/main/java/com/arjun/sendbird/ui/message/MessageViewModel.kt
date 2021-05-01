@@ -5,10 +5,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arjun.sendbird.repository.ChatRepository
+import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage
+import com.sendbird.android.GroupChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,6 +27,17 @@ class MessageViewModel @Inject constructor(
         viewModelScope.launch {
             val messages = repository.loadMessages(channelUrl = channelUrl)
             _messages.value = messages
+        }
+    }
+
+    private val _channel by lazy { MutableLiveData<GroupChannel>() }
+    val channel: LiveData<GroupChannel>
+        get() = _channel
+
+    fun getChannel(channelUrl: String) {
+        viewModelScope.launch {
+            val channel = repository.getChannel(channelUrl = channelUrl)
+            _channel.value = channel
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arjun.sendbird.dataSource.ChannelDataSource
 import com.sendbird.android.BaseChannel
+import com.sendbird.android.GroupChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,9 +16,9 @@ class ChannelListViewModel @Inject constructor(
     private val channelDataSource: ChannelDataSource
 ) : ViewModel() {
 
-    private val _channels by lazy { mutableStateOf<List<BaseChannel>?>(null) }
+    private val _channels by lazy { mutableStateOf<List<GroupChannel>?>(null) }
 
-    val channels: State<List<BaseChannel>?>
+    val channels: State<List<GroupChannel>?>
         get() = _channels
 
     init {
