@@ -179,9 +179,6 @@ class MessageFragment : BaseFragment() {
                         end.linkTo(parent.end)
                         bottom.linkTo(parent.bottom)
                     },
-                label = {
-                    Text(text = "Enter Message")
-                },
                 trailingIcon = {
                     IconButton(
                         onClick = onSendClick,
@@ -209,7 +206,8 @@ class MessageFragment : BaseFragment() {
                     disabledIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = Color.Transparent,
-                )
+                ),
+
             )
         }
     }
