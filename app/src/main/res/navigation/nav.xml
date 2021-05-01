@@ -2,10 +2,49 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav"
-    app:startDestination="@id/chatDetailFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/chatDetailFragment"
         android:name="com.arjun.sendbird.ui.chatDetail.ChatDetailFragment"
-        android:label="ChatDetailFragment" />
+        android:label="ChatDetailFragment" >
+        <argument
+            android:name="channelUrl"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.arjun.sendbird.ui.login.LoginFragment"
+        android:label="LoginFragment" >
+        <action
+            android:id="@+id/action_loginFragment_to_channelListFragment"
+            app:destination="@id/channelListFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/channelListFragment"
+        android:name="com.arjun.sendbird.ui.channelList.ChannelListFragment"
+        android:label="ChannelListFragment" >
+        <action
+            android:id="@+id/action_channelListFragment_to_chatDetailFragment"
+            app:destination="@id/chatDetailFragment"
+            app:popUpTo="@id/channelListFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.arjun.sendbird.ui.splash.SplashFragment"
+        android:label="SplashFragment" >
+        <action
+            android:id="@+id/action_splashFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_channelListFragment"
+            app:destination="@id/channelListFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>
