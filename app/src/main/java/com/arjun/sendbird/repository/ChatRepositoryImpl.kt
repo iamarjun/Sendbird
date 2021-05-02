@@ -8,6 +8,7 @@ import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
@@ -28,6 +29,12 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun sendMessage(channelUrl: String, message: String): BaseMessage =
         messageDataSource.sendMessage(channelUrl, message)
+
+    override suspend fun sendFileMessage(
+        channelUrl: String,
+        fileInfo: Hashtable<String, Any?>
+    ): BaseMessage =
+        messageDataSource.sendFileMessage(channelUrl, fileInfo)
 
     override suspend fun loadMessages(
         channelUrl: String,

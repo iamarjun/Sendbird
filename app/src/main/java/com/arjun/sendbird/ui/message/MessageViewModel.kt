@@ -7,6 +7,8 @@ import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,9 +56,20 @@ class MessageViewModel @Inject constructor(
                 val msg = repository.sendMessage(channelUrl, message)
                 addMessage(msg)
             } catch (e: Exception) {
-
+                Timber.e(e)
             }
 
+        }
+    }
+
+    fun sendFileMessage(channelUrl: String, fileInfo: Hashtable<String, Any?>) {
+        viewModelScope.launch {
+            try {
+                val msg = repository.sendFileMessage(channelUrl, fileInfo)
+                addMessage(msg)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
 }

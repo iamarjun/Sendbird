@@ -1,25 +1,21 @@
 package com.arjun.sendbird.dataSource
 
-import android.content.ContentResolver
-import android.net.Uri
 import com.sendbird.android.BaseChannel
-import com.sendbird.android.BaseChannel.GetMessagesHandler
-import com.sendbird.android.BaseChannel.SendUserMessageHandler
+import com.sendbird.android.BaseChannel.*
 import com.sendbird.android.BaseMessage
+import com.sendbird.android.FileMessage.ThumbnailSize
+import com.sendbird.android.FileMessageParams
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelGetHandler
-import com.sendbird.android.UserMessageParams
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
+import java.util.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class MessageDataSource @Inject constructor(
-    private val contentResolver: ContentResolver,
-) {
+class MessageDataSource @Inject constructor() {
 
     suspend fun getChannel(channelUrl: String): GroupChannel {
         return suspendCancellableCoroutine { continuation ->
@@ -49,6 +45,44 @@ class MessageDataSource @Inject constructor(
                 continuation.resume(message)
             }
             channel.sendUserMessage(message, messageHandler)
+        }
+    }
+
+    suspend fun sendFileMessage(
+        channelUrl: String,
+        fileInfo: Hashtable<String, Any?>
+    ): BaseMessage {
+        val channel = getChannel(channelUrl)
+
+        // Specify two dimensions of thumbnails to generate
+        val thumbnailSizes: MutableList<ThumbnailSize> = ArrayList()
+        thumbnailSizes.add(ThumbnailSize(240, 240))
+        thumbnailSizes.add(ThumbnailSize(320, 320))
+
+        val name: String = if (fileInfo.containsKey("name"))
+            fileInfo["name"] as String else {
+            "Sendbird File"
+        }
+        val path = fileInfo["path"] as String
+        val file = File(path)
+        val mime = fileInfo["mime"] as String
+        val size = fileInfo["size"] as Int
+
+        val params = FileMessageParams().setFile(file)
+            .setFileName(name)
+            .setFileSize(size)
+            .setFileUrl(path)
+            .setMimeType(mime)
+            .setThumbnailSizes(thumbnailSizes)
+
+        return suspendCancellableCoroutine { continuation ->
+            val messageHandler = SendFileMessageHandler { fileMessage, error ->
+                if (error != null) {
+                    Timber.e(error)
+                }
+                continuation.resume(fileMessage)
+            }
+            channel.sendFileMessage(params, messageHandler)
         }
     }
 
@@ -102,24 +136,6 @@ class MessageDataSource @Inject constructor(
         channelUrl: String,
         message: BaseMessage
     ) = getChannel(channelUrl).getUndeliveredMemberCount(message)
-
-    private fun copyStreamToFile(uri: Uri): File {
-        val outputFile = File.createTempFile("temp", null)
-
-        contentResolver.openInputStream(uri)?.use { input ->
-            val outputStream = FileOutputStream(outputFile)
-            outputStream.use { output ->
-                val buffer = ByteArray(4 * 1024) // buffer size
-                while (true) {
-                    val byteCount = input.read(buffer)
-                    if (byteCount < 0) break
-                    output.write(buffer, 0, byteCount)
-                }
-                output.flush()
-            }
-        }
-        return outputFile
-    }
 
     companion object {
         private const val CHANNEL_MESSAGE_LIMIT = 30

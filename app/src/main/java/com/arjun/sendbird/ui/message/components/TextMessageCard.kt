@@ -20,7 +20,7 @@ import com.arjun.sendbird.util.widthDp
 import com.sendbird.android.BaseMessage
 
 @Composable
-fun TextCard(
+fun TextMessageCard(
     message: BaseMessage,
 ) {
     Column(

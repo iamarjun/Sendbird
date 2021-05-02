@@ -32,13 +32,12 @@ import androidx.navigation.fragment.navArgs
 import com.arjun.sendbird.R
 import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
-import com.arjun.sendbird.ui.message.components.DateCard
-import com.arjun.sendbird.ui.message.components.ListTile
-import com.arjun.sendbird.ui.message.components.MessageInput
-import com.arjun.sendbird.ui.message.components.TextCard
+import com.arjun.sendbird.ui.message.components.*
+import com.arjun.sendbird.util.FileUtils
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.sendbird.android.BaseMessage
+import com.sendbird.android.FileMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -60,6 +59,8 @@ class MessageFragment : BaseFragment() {
             requireActivity().activityResultRegistry
         ) {
             Timber.d("Uri : $it")
+            val fileInfo = FileUtils.getFileInfo(requireContext(), it) ?: return@AttachmentHelper
+            viewModel.sendFileMessage(channelUrl, fileInfo)
         }
     }
 
@@ -175,7 +176,11 @@ class MessageFragment : BaseFragment() {
                     }
 
                     items(messages) { message ->
-                        TextCard(message = message)
+                        when (message is FileMessage) {
+                            true -> FileMessageCard(message = message)
+                            false -> TextMessageCard(message = message)
+                        }
+
                     }
                 }
             }
