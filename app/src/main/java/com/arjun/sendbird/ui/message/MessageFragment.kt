@@ -2,51 +2,52 @@ package com.arjun.sendbird.ui.message
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.arjun.sendbird.R
 import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
-import com.arjun.sendbird.util.isMe
+import com.arjun.sendbird.ui.message.components.DateCard
+import com.arjun.sendbird.ui.message.components.TextCard
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
-import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.sendbird.android.BaseMessage
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 @ExperimentalAnimatedInsets
+@ExperimentalFoundationApi
 class MessageFragment : BaseFragment() {
 
     private val args by navArgs<MessageFragmentArgs>()
@@ -99,7 +100,7 @@ class MessageFragment : BaseFragment() {
 
     @Composable
     override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
-        val messages by viewModel.messages.observeAsState(emptyList())
+        val messages by viewModel.groupedMessages.observeAsState(mapOf())
 
         val messageToSend = remember {
             mutableStateOf("")
@@ -111,7 +112,7 @@ class MessageFragment : BaseFragment() {
 
         ChatScreen(
             paddingValues = paddingValues,
-            messages = messages,
+            groupedMessages = messages,
             message = messageToSend.value,
             onMessageChange = ::onMessageChange,
             onSendClick = {
@@ -124,62 +125,78 @@ class MessageFragment : BaseFragment() {
     @Composable
     private fun ChatScreen(
         paddingValues: PaddingValues,
-        messages: List<BaseMessage>,
+        groupedMessages: Map<String, List<BaseMessage>>,
         message: String,
         onMessageChange: (String) -> Unit,
         onSendClick: () -> Unit,
     ) {
-        ConstraintLayout(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues)
         ) {
-            val (lazyColumn, textField) = createRefs()
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .constrainAs(lazyColumn) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(textField.top)
-                        height = Dimension.fillToConstraints
-                    },
-                reverseLayout = true
+                    .weight(1f),
+                reverseLayout = true,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
 
-                items(messages) { message ->
-                    Text(
-                        text = message.message,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        textAlign = if (message.isMe()) TextAlign.End else TextAlign.Start,
-                        fontSize = 16.sp
-                    )
+                groupedMessages.forEach { (date, messages) ->
+
+                    stickyHeader {
+                        DateCard(date = date)
+                    }
+
+                    items(messages) { message ->
+                        TextCard(message = message)
+                    }
                 }
             }
 
-            TextField(
-                value = message,
-                onValueChange = onMessageChange,
+            Divider()
+
+            Card(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = Color.Black,
+                    .fillMaxWidth(),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth(),
+                ) {
+                    IconButton(
+                        onClick = onSendClick,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CameraAlt,
+                            contentDescription = "Camera Icon",
+                            tint = colorResource(id = R.color.purple_500)
+                        )
+                    }
+
+                    TextField(
+                        value = message,
+                        onValueChange = onMessageChange,
+                        keyboardOptions = KeyboardOptions(
+                            autoCorrect = true,
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            backgroundColor = colorResource(id = R.color.light_blue_gray2),
+                        ),
+                        placeholder = {
+                            Text(text = "Type a message")
+                        },
                         shape = CircleShape
                     )
-                    .navigationBarsWithImePadding()
-                    .constrainAs(textField) {
-                        top.linkTo(lazyColumn.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(parent.bottom)
-                    },
-                trailingIcon = {
+
                     IconButton(
                         onClick = onSendClick,
                         enabled = message.isNotEmpty()
@@ -187,28 +204,13 @@ class MessageFragment : BaseFragment() {
                         Icon(
                             imageVector = Icons.Filled.Send,
                             contentDescription = "Search Icon",
+                            tint =  colorResource(id = if (message.isNotEmpty()) R.color.purple_500 else R.color.purple_200)
                         )
                     }
-                },
-                textStyle = TextStyle(
-                    color = MaterialTheme.colors.onSurface,
-                    background = Color.Transparent,
-                ),
 
-                keyboardOptions = KeyboardOptions(
-                    autoCorrect = true,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done,
-                ),
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = Color.Transparent,
-                ),
+                }
 
-            )
+            }
         }
     }
 

@@ -1,11 +1,8 @@
 package com.arjun.sendbird.ui.message
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.arjun.sendbird.repository.ChatRepository
-import com.sendbird.android.BaseChannel
+import com.arjun.sendbird.util.getHumanReadableDate
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,8 +17,12 @@ class MessageViewModel @Inject constructor(
     val channelState = repository.observeChannels()
 
     private val _messages by lazy { MutableLiveData<List<BaseMessage>>() }
-    val messages: LiveData<List<BaseMessage>>
+    private val messages: LiveData<List<BaseMessage>>
         get() = _messages
+
+    val groupedMessages = messages.map {
+        it.groupBy { it.getHumanReadableDate() }
+    }
 
     fun loadMessages(channelUrl: String) {
         viewModelScope.launch {
