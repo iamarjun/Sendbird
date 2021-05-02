@@ -20,8 +20,10 @@ import com.arjun.sendbird.MainViewModel
 import com.arjun.sendbird.model.Resource
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @ExperimentalAnimatedInsets
 class LoginFragment : BaseFragment() {
@@ -31,12 +33,11 @@ class LoginFragment : BaseFragment() {
 
 
     @Composable
-    override fun ToolBar() {
-
-    }
-
-    @Composable
-    override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+    override fun MainContent(
+        paddingValues: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        coroutineScope: CoroutineScope,
+    ) {
         val snackBarScope = rememberCoroutineScope()
 
         val userId by viewModel.userId.observeAsState("")
@@ -47,7 +48,7 @@ class LoginFragment : BaseFragment() {
         when (userExist) {
             is Resource.Error -> {
                 LaunchedEffect(userExist) {
-                    scaffoldState.snackbarHostState.showSnackbar(
+                    bottomSheetScaffoldState.snackbarHostState.showSnackbar(
                         userExist?.e?.message ?: "Something went wrong"
                     )
                 }
@@ -64,7 +65,7 @@ class LoginFragment : BaseFragment() {
             onConnectClick = {
                 if (userId.isEmpty() || userId.length < 6) {
                     snackBarScope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar("Please enter a user id")
+                        bottomSheetScaffoldState.snackbarHostState.showSnackbar("Please enter a user id")
                     }
                     return@LoginScreen
                 }

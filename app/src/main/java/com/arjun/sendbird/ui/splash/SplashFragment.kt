@@ -5,8 +5,9 @@ import android.view.View
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ScaffoldState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,10 +28,12 @@ import com.arjun.sendbird.model.Resource
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
+@ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @ExperimentalAnimatedInsets
 @AndroidEntryPoint
@@ -55,14 +58,18 @@ class SplashFragment : BaseFragment() {
     }
 
     @Composable
-    override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+    override fun MainContent(
+        paddingValues: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        coroutineScope: CoroutineScope,
+    ) {
 
         val userExist by viewModel.userExist.observeAsState()
 
         when (userExist) {
             is Resource.Error -> {
                 LaunchedEffect(userExist) {
-                    scaffoldState.snackbarHostState.showSnackbar(
+                    bottomSheetScaffoldState.snackbarHostState.showSnackbar(
                         userExist?.e?.message ?: "Something went wrong"
                     )
                 }
@@ -92,10 +99,5 @@ class SplashFragment : BaseFragment() {
                     .padding(16.dp),
             )
         }
-    }
-
-    @Composable
-    override fun ToolBar() {
-
     }
 }

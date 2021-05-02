@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -26,18 +29,23 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.arjun.sendbird.R
 import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.arjun.sendbird.ui.message.components.DateCard
+import com.arjun.sendbird.ui.message.components.ListTile
 import com.arjun.sendbird.ui.message.components.MessageInput
 import com.arjun.sendbird.ui.message.components.TextCard
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.sendbird.android.BaseMessage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@ExperimentalMaterialApi
 @ExperimentalAnimatedInsets
 @ExperimentalFoundationApi
 class MessageFragment : BaseFragment() {
@@ -101,7 +109,11 @@ class MessageFragment : BaseFragment() {
     }
 
     @Composable
-    override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+    override fun MainContent(
+        paddingValues: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        coroutineScope: CoroutineScope,
+    ) {
         val messages by viewModel.groupedMessages.observeAsState(mapOf())
 
         val messageToSend = remember {
@@ -122,7 +134,13 @@ class MessageFragment : BaseFragment() {
                 onMessageChange("")
             },
             onAttachmentClick = {
-                attachmentHelper.openCamera()
+                coroutineScope.launch {
+                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                    } else {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }
+                }
             }
         )
     }
@@ -169,6 +187,38 @@ class MessageFragment : BaseFragment() {
                 onValueChange = onMessageChange,
                 onSendClick = onSendClick,
                 onAttachmentClick = onAttachmentClick
+            )
+        }
+    }
+
+    @Composable
+    override fun BottomSheet() {
+        Column(
+            Modifier
+                .fillMaxWidth()
+        ) {
+            ListTile(
+                title = "Open Camera",
+                icon = Icons.Filled.CameraAlt,
+                iconTint = colorResource(
+                    id = R.color.purple_500
+                ),
+                onClick = {
+                    attachmentHelper.openCamera()
+                }
+            )
+
+            Divider()
+
+            ListTile(
+                title = "Open Gallery",
+                icon = Icons.Filled.PhotoLibrary,
+                iconTint = colorResource(
+                    id = R.color.purple_500
+                ),
+                onClick = {
+                    attachmentHelper.selectImage()
+                }
             )
         }
     }

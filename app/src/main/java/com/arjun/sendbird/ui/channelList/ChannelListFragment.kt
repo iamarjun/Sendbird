@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -23,11 +22,9 @@ import com.arjun.sendbird.ui.base.BaseFragment
 import com.arjun.sendbird.util.getHumanReadableDate
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.CoroutineScope
 
+@ExperimentalMaterialApi
 @ExperimentalAnimatedInsets
 class ChannelListFragment : BaseFragment() {
 
@@ -39,7 +36,11 @@ class ChannelListFragment : BaseFragment() {
     )
 
     @Composable
-    override fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState) {
+    override fun MainContent(
+        paddingValues: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        coroutineScope: CoroutineScope,
+    ) {
         val channels = viewModel.channels.value
 
         LazyColumn(

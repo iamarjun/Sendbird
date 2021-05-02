@@ -5,29 +5,40 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material.Scaffold
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import com.arjun.sendbird.R
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 
+@ExperimentalMaterialApi
 @ExperimentalAnimatedInsets
 @AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
 
     @Composable
-    abstract fun MainContent(paddingValues: PaddingValues, scaffoldState: ScaffoldState)
+    abstract fun MainContent(
+        paddingValues: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        coroutineScope: CoroutineScope,
+    )
 
     @Composable
-    abstract fun ToolBar()
+    open fun ToolBar() {
+    }
+
+    @Composable
+    open fun BottomSheet() {
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,16 +51,29 @@ abstract class BaseFragment : Fragment() {
                 val windowInsets = ViewWindowInsetObserver(this)
                     .start(windowInsetsAnimationsEnabled = true)
 
+                val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+                    bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
+                )
+
+                val coroutineScope = rememberCoroutineScope()
+
                 CompositionLocalProvider(
                     LocalWindowInsets provides windowInsets,
                 ) {
-                    val scaffoldState = rememberScaffoldState()
-                    Scaffold(
-                        scaffoldState = scaffoldState,
+
+                    BottomSheetScaffold(
+                        scaffoldState = bottomSheetScaffoldState,
                         topBar = { ToolBar() },
-                        backgroundColor = colorResource(id = R.color.light_blue_gray)
+                        backgroundColor = colorResource(id = R.color.light_blue_gray),
+                        sheetContent = { BottomSheet() },
+                        sheetPeekHeight = 0.dp,
+                        sheetElevation = 8.dp,
                     ) {
-                        MainContent(paddingValues = it, scaffoldState = scaffoldState)
+                        MainContent(
+                            paddingValues = it,
+                            bottomSheetScaffoldState = bottomSheetScaffoldState,
+                            coroutineScope
+                        )
                     }
                 }
             }
