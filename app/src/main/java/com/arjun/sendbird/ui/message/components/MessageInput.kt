@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
@@ -40,8 +41,8 @@ fun MessageInput(
                 onClick = onAttachmentClick,
             ) {
                 Icon(
-                    imageVector = Icons.Filled.CameraAlt,
-                    contentDescription = "Camera Icon",
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add Attachments Icon",
                     tint = colorResource(id = R.color.purple_500)
                 )
             }
