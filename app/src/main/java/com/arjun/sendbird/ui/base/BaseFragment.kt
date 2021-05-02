@@ -11,7 +11,9 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.colorResource
 import androidx.fragment.app.Fragment
+import com.arjun.sendbird.R
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
@@ -44,7 +46,8 @@ abstract class BaseFragment : Fragment() {
                     val scaffoldState = rememberScaffoldState()
                     Scaffold(
                         scaffoldState = scaffoldState,
-                        topBar = { ToolBar() }
+                        topBar = { ToolBar() },
+                        backgroundColor = colorResource(id = R.color.light_blue_gray)
                     ) {
                         MainContent(paddingValues = it, scaffoldState = scaffoldState)
                     }
