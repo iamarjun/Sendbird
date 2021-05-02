@@ -50,6 +50,7 @@ android {
 
 dependencies {
 
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.3.1")
     coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:1.1.5")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05")

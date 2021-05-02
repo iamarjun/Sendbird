@@ -8,26 +8,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -35,16 +26,17 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.arjun.sendbird.R
 import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.arjun.sendbird.ui.message.components.DateCard
+import com.arjun.sendbird.ui.message.components.MessageInput
 import com.arjun.sendbird.ui.message.components.TextCard
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.sendbird.android.BaseMessage
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 
 @ExperimentalAnimatedInsets
 @ExperimentalFoundationApi
@@ -53,6 +45,15 @@ class MessageFragment : BaseFragment() {
     private val args by navArgs<MessageFragmentArgs>()
     private val channelUrl by lazy { args.channelUrl }
     private val viewModel by viewModels<MessageViewModel>()
+    private val attachmentHelper by lazy {
+        AttachmentHelper(
+            lifecycle,
+            requireContext(),
+            requireActivity().activityResultRegistry
+        ) {
+            Timber.d("Uri : $it")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +61,7 @@ class MessageFragment : BaseFragment() {
             loadMessages(channelUrl)
             getChannel(channelUrl)
         }
+        attachmentHelper
     }
 
     @Composable
@@ -118,6 +120,9 @@ class MessageFragment : BaseFragment() {
             onSendClick = {
                 viewModel.sendMessage(channelUrl, messageToSend.value)
                 onMessageChange("")
+            },
+            onAttachmentClick = {
+                attachmentHelper.openCamera()
             }
         )
     }
@@ -129,6 +134,7 @@ class MessageFragment : BaseFragment() {
         message: String,
         onMessageChange: (String) -> Unit,
         onSendClick: () -> Unit,
+        onAttachmentClick: () -> Unit,
     ) {
         Column(
             modifier = Modifier
@@ -158,59 +164,12 @@ class MessageFragment : BaseFragment() {
 
             Divider()
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth(),
-                ) {
-                    IconButton(
-                        onClick = onSendClick,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CameraAlt,
-                            contentDescription = "Camera Icon",
-                            tint = colorResource(id = R.color.purple_500)
-                        )
-                    }
-
-                    TextField(
-                        value = message,
-                        onValueChange = onMessageChange,
-                        keyboardOptions = KeyboardOptions(
-                            autoCorrect = true,
-                        ),
-                        colors = TextFieldDefaults.textFieldColors(
-                            focusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            backgroundColor = colorResource(id = R.color.light_blue_gray2),
-                        ),
-                        placeholder = {
-                            Text(text = "Type a message")
-                        },
-                        shape = CircleShape
-                    )
-
-                    IconButton(
-                        onClick = onSendClick,
-                        enabled = message.isNotEmpty()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Send,
-                            contentDescription = "Search Icon",
-                            tint =  colorResource(id = if (message.isNotEmpty()) R.color.purple_500 else R.color.purple_200)
-                        )
-                    }
-
-                }
-
-            }
+            MessageInput(
+                value = message,
+                onValueChange = onMessageChange,
+                onSendClick = onSendClick,
+                onAttachmentClick = onAttachmentClick
+            )
         }
     }
 
