@@ -3,7 +3,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
+        maven("https://repo.sendbird.com/public/maven")
     }
 }
 rootProject.name = "Sendbird"

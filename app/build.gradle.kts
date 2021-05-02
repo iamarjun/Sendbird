@@ -86,7 +86,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-glide:0.8.0")
     implementation("com.google.accompanist:accompanist-insets:0.8.0")
 
-    implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.160")
+    implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
 
     implementation("com.jakewharton.timber:timber:4.7.1")
 
