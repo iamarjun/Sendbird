@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.arjun.sendbird.ui.base.BaseFragment
+import com.arjun.sendbird.util.getHumanReadableDate
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import java.time.Instant
@@ -47,13 +48,6 @@ class ChannelListFragment : BaseFragment() {
 
             channels?.let {
                 items(it) { channel ->
-
-                    val date: LocalDate =
-                        Instant.ofEpochMilli(channel.createdAt).atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-
-                    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM, dd")
-
                     Card(
                         Modifier
                             .padding(paddingValues = paddingValues)
@@ -104,7 +98,7 @@ class ChannelListFragment : BaseFragment() {
                             Spacer(modifier = Modifier.weight(1f))
 
                             Text(
-                                text = formatter.format(date),
+                                text = channel.getHumanReadableDate(),
                                 modifier = Modifier
                                     .align(Alignment.Bottom)
                                     .padding(16.dp),
