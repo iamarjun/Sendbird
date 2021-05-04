@@ -71,7 +71,6 @@ class MessageDataSource @Inject constructor() {
         val params = FileMessageParams().setFile(file)
             .setFileName(name)
             .setFileSize(size)
-            .setFileUrl(path)
             .setMimeType(mime)
             .setThumbnailSizes(thumbnailSizes)
 
