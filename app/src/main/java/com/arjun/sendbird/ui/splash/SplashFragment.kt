@@ -29,6 +29,7 @@ import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
@@ -51,8 +52,10 @@ class SplashFragment : BaseFragment() {
             .onEach {
                 if (it.isNotEmpty())
                     viewModel.login(it)
-                else
+                else {
+                    delay(3000)
                     findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToLoginFragment())
+                }
             }.launchIn(lifecycleScope)
 
     }
