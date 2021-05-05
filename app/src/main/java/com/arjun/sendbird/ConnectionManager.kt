@@ -39,6 +39,13 @@ class ConnectionManager @Inject constructor(
         return exist
     }
 
+    suspend fun disconnect(onDisconnect: () -> Unit) {
+        SendBird.disconnect {
+            onDisconnect()
+        }
+        userManager.clearUser()
+    }
+
     @ExperimentalCoroutinesApi
     fun observeConnection(): Flow<Boolean> {
 

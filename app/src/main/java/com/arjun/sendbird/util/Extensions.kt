@@ -38,7 +38,7 @@ fun BaseChannel.getHumanReadableDate(): String {
     return formatter.format(date)
 }
 
-const val ACCESS_TOKEN = "ee6f6cd6410c96a4bdb6343073de5cbf82dbf233"
+const val ACCESS_TOKEN = "615e13d4bb6f5e0d2815e6182e11c1c619affb14"
 
 fun Context.widthDp() = resources.displayMetrics.run { widthPixels / density }
 fun Context.heightDp() = resources.displayMetrics.run { heightPixels / density }

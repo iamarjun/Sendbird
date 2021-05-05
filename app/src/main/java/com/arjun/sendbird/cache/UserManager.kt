@@ -27,6 +27,10 @@ class UserManager @Inject constructor(
         it[USER_ID] ?: ""
     }
 
+    suspend fun clearUser() {
+        saveUserId("")
+    }
+
     companion object {
         private val USER_ID = stringPreferencesKey("user_id")
     }

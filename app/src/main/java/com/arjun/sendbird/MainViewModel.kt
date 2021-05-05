@@ -45,4 +45,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun logout(onLogout: () -> Unit) {
+        viewModelScope.launch {
+            connectionManager.disconnect {
+                onLogout()
+            }
+        }
+    }
+
 }
