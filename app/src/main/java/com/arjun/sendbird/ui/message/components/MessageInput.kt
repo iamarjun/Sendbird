@@ -62,7 +62,8 @@ fun MessageInput(
                 placeholder = {
                     Text(text = "Type a message")
                 },
-                shape = CircleShape
+                shape = CircleShape,
+                modifier = Modifier.weight(1f, true)
             )
 
             IconButton(
