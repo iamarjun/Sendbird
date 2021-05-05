@@ -50,6 +50,6 @@ class ChatRepositoryImpl @Inject constructor(
         messageDataSource.markMessagesAsRead(channelUrl)
     }
 
-    override fun observeUserOnlinePresence(userId: String): Flow<Boolean> =
+    override fun observeUserOnlinePresence(userId: String?): Flow<Boolean> =
         userDataSource.observeUserOnlinePresence(userId)
 }

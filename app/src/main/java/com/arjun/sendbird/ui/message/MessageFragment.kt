@@ -2,6 +2,8 @@ package com.arjun.sendbird.ui.message
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -14,15 +16,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -39,12 +41,16 @@ import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage
+import com.sendbird.android.SendBird
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@ExperimentalCoroutinesApi
+@ExperimentalAnimationApi
 @ExperimentalMaterialApi
 @ExperimentalAnimatedInsets
 @ExperimentalFoundationApi
@@ -78,6 +84,7 @@ class MessageFragment : BaseFragment() {
     override fun ToolBar() {
 
         val channel by viewModel.channel.observeAsState()
+        val isOnline by viewModel.isOnline.collectAsState(initial = false)
 
         TopAppBar {
             IconButton(
@@ -92,7 +99,7 @@ class MessageFragment : BaseFragment() {
             }
 
             Image(
-                painter = rememberGlidePainter(request = channel?.members?.find { it.userId != channel?.creator?.userId }?.profileUrl),
+                painter = rememberGlidePainter(request = channel?.members?.find { it.userId != SendBird.getCurrentUser().userId }?.profileUrl),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(56.dp)
@@ -103,10 +110,22 @@ class MessageFragment : BaseFragment() {
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Text(
-                text = channel?.members?.find { it.userId != channel?.creator?.userId }?.nickname
-                    ?: "", fontSize = 16.sp
-            )
+            Column(
+                horizontalAlignment = Alignment.Start,
+            ) {
+                Text(
+                    text = channel?.members?.find { it.userId != SendBird.getCurrentUser().userId }?.nickname
+                        ?: "", fontSize = 16.sp
+                )
+                AnimatedVisibility(visible = isOnline) {
+                    Text(
+                        text = "Online", style = TextStyle(
+                            fontSize = 12.sp,
+                            color = Color.LightGray,
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -243,7 +262,7 @@ class MessageFragment : BaseFragment() {
                     attachmentHelper.openGallery()
                 }
             )
-            
+
         }
     }
 

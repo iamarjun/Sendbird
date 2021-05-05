@@ -25,5 +25,5 @@ interface ChatRepository {
 
     suspend fun markMessagesAsRead(channelUrl: String)
 
-    fun observeUserOnlinePresence(userId: String): Flow<Boolean>
+    fun observeUserOnlinePresence(userId: String?): Flow<Boolean>
 }

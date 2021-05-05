@@ -30,7 +30,10 @@ class UserDataSource @Inject constructor() {
         }
     }
 
-    fun observeUserOnlinePresence(userId: String): Flow<Boolean> = flow {
+    fun observeUserOnlinePresence(userId: String?): Flow<Boolean> = flow {
+
+        userId ?: return@flow
+
         try {
             while (true) {
                 val listQuery = SendBird.createApplicationUserListQuery()

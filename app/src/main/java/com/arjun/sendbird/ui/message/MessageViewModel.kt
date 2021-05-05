@@ -5,12 +5,16 @@ import com.arjun.sendbird.repository.ChatRepository
 import com.arjun.sendbird.util.getHumanReadableDate
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
+import com.sendbird.android.SendBird
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val repository: ChatRepository,
@@ -42,6 +46,10 @@ class MessageViewModel @Inject constructor(
             val channel = repository.getChannel(channelUrl = channelUrl)
             _channel.value = channel
         }
+    }
+
+    val isOnline = _channel.asFlow().flatMapLatest { channel ->
+        repository.observeUserOnlinePresence(channel?.members?.find { it.userId != SendBird.getCurrentUser().userId }?.userId)
     }
 
     fun addMessage(message: BaseMessage) {
