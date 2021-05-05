@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -202,29 +203,47 @@ class MessageFragment : BaseFragment() {
             Modifier
                 .fillMaxWidth()
         ) {
-            ListTile(
-                title = "Open Camera",
-                icon = Icons.Filled.CameraAlt,
-                iconTint = colorResource(
-                    id = R.color.purple_500
-                ),
-                onClick = {
+
+            ListItem(
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = "Search Icon",
+                        tint = colorResource(
+                            id = R.color.purple_500
+                        ),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                },
+                text = {
+                    Text(text = "Open Camera")
+                },
+                modifier = Modifier.clickable {
                     attachmentHelper.openCamera()
                 }
             )
 
             Divider()
 
-            ListTile(
-                title = "Open Gallery",
-                icon = Icons.Filled.PhotoLibrary,
-                iconTint = colorResource(
-                    id = R.color.purple_500
-                ),
-                onClick = {
-                    attachmentHelper.selectImage()
+            ListItem(
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.PhotoLibrary,
+                        contentDescription = "Search Icon",
+                        tint = colorResource(
+                            id = R.color.purple_500
+                        ),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                },
+                text = {
+                    Text(text = "Open Gallery")
+                },
+                modifier = Modifier.clickable {
+                    attachmentHelper.openGallery()
                 }
             )
+            
         }
     }
 
