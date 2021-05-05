@@ -2,6 +2,7 @@ package com.arjun.sendbird.ui.login
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -10,6 +11,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -17,11 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.arjun.sendbird.MainViewModel
+import com.arjun.sendbird.R
 import com.arjun.sendbird.model.Resource
 import com.arjun.sendbird.ui.base.BaseFragment
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
@@ -91,11 +95,27 @@ class LoginFragment : BaseFragment() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
+            Image(
+                painter = painterResource(id = R.drawable.logo_sendbird),
+                contentDescription = null,
+                Modifier
+                    .size(150.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .height(32.dp)
+                    .fillMaxWidth()
+            )
+
             OutlinedTextField(
                 value = textFieldValue,
                 onValueChange = onTextFieldValueChange,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(
+                        horizontal = 16.dp,
+                    )
                     .fillMaxWidth(),
                 label = {
                     Text(text = "Enter User ID")
@@ -110,6 +130,12 @@ class LoginFragment : BaseFragment() {
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done,
                 ),
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .height(16.dp)
+                    .fillMaxWidth()
             )
 
             Button(
