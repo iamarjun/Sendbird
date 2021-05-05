@@ -40,7 +40,7 @@ android {
         useIR = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.0.0-beta05"
+        kotlinCompilerExtensionVersion = "1.0.0-beta06"
     }
     buildFeatures {
         viewBinding = true
@@ -52,24 +52,21 @@ dependencies {
 
     coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:1.1.5")
 
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05")
-
     implementation("androidx.core:core-ktx:1.3.2")
     implementation("com.google.android.material:material:1.3.0")
 
     implementation("androidx.appcompat:appcompat:1.3.0-rc01")
 
-    implementation("androidx.compose.ui:ui:1.0.0-beta05")
-    implementation("androidx.compose.ui:ui-tooling:1.0.0-beta05")
-    implementation("androidx.compose.foundation:foundation:1.0.0-beta05")
-    implementation("androidx.compose.material:material:1.0.0-beta05")
-    implementation("androidx.compose.material:material-icons-core:1.0.0-beta05")
-    implementation("androidx.compose.material:material-icons-extended:1.0.0-beta05")
+    implementation("androidx.compose.ui:ui:1.0.0-beta06")
+    implementation("androidx.compose.ui:ui-tooling:1.0.0-beta06")
+    implementation("androidx.compose.foundation:foundation:1.0.0-beta06")
+    implementation("androidx.compose.material:material:1.0.0-beta06")
+    implementation("androidx.compose.material:material-icons-core:1.0.0-beta06")
+    implementation("androidx.compose.material:material-icons-extended:1.0.0-beta06")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta06")
+
     implementation("androidx.activity:activity-compose:1.3.0-alpha07")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta05")
-
-
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha01")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05")
 
     implementation("androidx.ui:ui-tooling:1.0.0-alpha07")
 
@@ -82,13 +79,12 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.35.1")
     kapt("com.google.dagger:hilt-compiler:2.35.1")
 
-    implementation("com.google.accompanist:accompanist-glide:0.8.0")
-    implementation("com.google.accompanist:accompanist-insets:0.8.0")
+    implementation("com.google.accompanist:accompanist-glide:0.9.0")
+    implementation("com.google.accompanist:accompanist-insets:0.9.0")
 
     implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
 
     implementation("com.jakewharton.timber:timber:4.7.1")
-
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0-alpha01")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0-alpha01")
