@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -95,6 +96,7 @@ class ChannelListFragment : BaseFragment() {
 
                             Column(
                                 verticalArrangement = Arrangement.SpaceAround,
+                                modifier = Modifier.fillMaxWidth(0.8f),
                             ) {
                                 Text(
                                     text = channel.name,
@@ -108,7 +110,9 @@ class ChannelListFragment : BaseFragment() {
                                     modifier = Modifier
                                         .padding(bottom = 16.dp),
                                     fontSize = 16.sp,
-                                    fontStyle = FontStyle.Italic
+                                    fontStyle = FontStyle.Italic,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
