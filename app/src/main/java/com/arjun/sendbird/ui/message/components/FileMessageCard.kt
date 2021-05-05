@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.arjun.sendbird.R
 import com.arjun.sendbird.util.isMe
+import com.arjun.sendbird.util.widthDp
 import com.google.accompanist.glide.rememberGlidePainter
 import com.sendbird.android.FileMessage
 
@@ -62,7 +64,11 @@ fun FileMessageCard(
                                 bottomEndPercent = if (message.isMe()) 0 else 10
                             )
                         )
-                        .size(200.dp),
+                        .size(
+                            LocalContext.current
+                                .widthDp()
+                                .times(0.5).dp
+                        ),
                     contentScale = ContentScale.Crop,
                 )
 
