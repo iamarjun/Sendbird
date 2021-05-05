@@ -89,7 +89,7 @@ class AttachmentHelper(
         }
     }
 
-    fun selectImage() {
+    fun openGallery() {
         checkPermission()
         getImages.launch("image/*")
     }
