@@ -50,7 +50,6 @@ android {
 
 dependencies {
 
-    implementation("androidx.lifecycle:lifecycle-common-java8:2.3.1")
     coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:1.1.5")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05")
@@ -80,8 +79,8 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    implementation("com.google.dagger:hilt-android:2.35")
-    kapt("com.google.dagger:hilt-compiler:2.35")
+    implementation("com.google.dagger:hilt-android:2.35.1")
+    kapt("com.google.dagger:hilt-compiler:2.35.1")
 
     implementation("com.google.accompanist:accompanist-glide:0.8.0")
     implementation("com.google.accompanist:accompanist-insets:0.8.0")
@@ -94,6 +93,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0-alpha01")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0-alpha01")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0-alpha01")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.4.0-alpha01")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0-beta01")
 
