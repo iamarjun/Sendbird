@@ -133,6 +133,11 @@ class MessageFragment : BaseFragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        isTyping.value = false
+    }
+
     @Composable
     override fun MainContent(
         paddingValues: PaddingValues,

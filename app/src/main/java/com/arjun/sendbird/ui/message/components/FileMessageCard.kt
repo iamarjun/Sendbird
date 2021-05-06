@@ -31,12 +31,14 @@ fun FileMessageCard(
             false -> Alignment.Start
         }
     ) {
+        val roundness = 15.dp
+
         Card(
             shape = RoundedCornerShape(
-                topStartPercent = 10,
-                topEndPercent = 10,
-                bottomStartPercent = if (message.isMe()) 10 else 0,
-                bottomEndPercent = if (message.isMe()) 0 else 10
+                topStart = roundness,
+                topEnd = roundness,
+                bottomStart = if (message.isMe()) roundness else 0.dp,
+                bottomEnd = if (message.isMe()) 0.dp else roundness
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
@@ -58,10 +60,10 @@ fun FileMessageCard(
                     modifier = Modifier
                         .clip(
                             RoundedCornerShape(
-                                topStartPercent = 10,
-                                topEndPercent = 10,
-                                bottomStartPercent = if (message.isMe()) 10 else 0,
-                                bottomEndPercent = if (message.isMe()) 0 else 10
+                                topStart = roundness,
+                                topEnd = roundness,
+                                bottomStart = if (message.isMe()) roundness else 0.dp,
+                                bottomEnd = if (message.isMe()) 0.dp else roundness
                             )
                         )
                         .size(
