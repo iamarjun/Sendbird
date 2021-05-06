@@ -4,7 +4,6 @@ import com.arjun.sendbird.model.ChannelState
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.flow.Flow
-import java.io.File
 import java.util.*
 
 interface ChatRepository {
@@ -21,7 +20,7 @@ interface ChatRepository {
 
     suspend fun sendFileMessage(channelUrl: String, fileInfo: Hashtable<String, Any?>): BaseMessage
 
-    suspend fun sendTypingStatus(channelUrl: String, isTyping: Boolean)
+    suspend fun sendTypingStatus(channelUrl: String, isTyping: Flow<Boolean>)
 
     suspend fun markMessagesAsRead(channelUrl: String)
 

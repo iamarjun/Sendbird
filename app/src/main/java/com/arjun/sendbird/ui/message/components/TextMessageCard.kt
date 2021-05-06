@@ -30,12 +30,15 @@ fun TextMessageCard(
             false -> Alignment.Start
         }
     ) {
+
+        val roundness = 15.dp
+
         Card(
             shape = RoundedCornerShape(
-                topStartPercent = 25,
-                topEndPercent = 25,
-                bottomStartPercent = if (message.isMe()) 25 else 0,
-                bottomEndPercent = if (message.isMe()) 0 else 25
+                topStart = roundness,
+                topEnd = roundness,
+                bottomStart = if (message.isMe()) roundness else 0.dp,
+                bottomEnd = if (message.isMe()) 0.dp else roundness
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)

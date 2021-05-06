@@ -7,6 +7,8 @@ import com.sendbird.android.FileMessage.ThumbnailSize
 import com.sendbird.android.FileMessageParams
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelGetHandler
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
@@ -114,13 +116,14 @@ class MessageDataSource @Inject constructor() {
         }
     }
 
-    suspend fun sendTypingStatus(channelUrl: String, isTyping: Boolean) {
+    suspend fun sendTypingStatus(channelUrl: String, isTyping: Flow<Boolean>) {
         val channel = getChannel(channelUrl)
-
-        if (isTyping) {
-            channel.startTyping()
-        } else {
-            channel.endTyping()
+        isTyping.collect {
+            if (it) {
+                channel.startTyping()
+            } else {
+                channel.endTyping()
+            }
         }
     }
 

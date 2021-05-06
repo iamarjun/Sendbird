@@ -8,6 +8,7 @@ import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -78,6 +79,23 @@ class MessageViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e)
             }
+        }
+    }
+
+    private val _showTypingStatus by lazy { MutableLiveData(false) }
+    val showTypingStatus: LiveData<Boolean>
+        get() = _showTypingStatus
+
+    fun showTypingIndicator(showTypingStatus: Boolean) {
+        _showTypingStatus.value = showTypingStatus
+    }
+
+    fun typingStatus(channelUrl: String, isTyping: Flow<Boolean>) {
+        viewModelScope.launch {
+            repository.sendTypingStatus(
+                channelUrl = channelUrl,
+                isTyping = isTyping
+            )
         }
     }
 }

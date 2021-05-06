@@ -8,6 +8,7 @@ import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 import javax.inject.Inject
 
@@ -42,7 +43,7 @@ class ChatRepositoryImpl @Inject constructor(
     ): List<BaseMessage> =
         messageDataSource.loadMessages(channelUrl, createdAt)
 
-    override suspend fun sendTypingStatus(channelUrl: String, isTyping: Boolean) {
+    override suspend fun sendTypingStatus(channelUrl: String, isTyping: Flow<Boolean>) {
         messageDataSource.sendTypingStatus(channelUrl, isTyping)
     }
 

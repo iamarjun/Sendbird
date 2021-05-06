@@ -44,8 +44,7 @@ import com.sendbird.android.FileMessage
 import com.sendbird.android.SendBird
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -59,6 +58,8 @@ class MessageFragment : BaseFragment() {
     private val args by navArgs<MessageFragmentArgs>()
     private val channelUrl by lazy { args.channelUrl }
     private val viewModel by viewModels<MessageViewModel>()
+    private val isTyping = MutableStateFlow(false)
+
     private val attachmentHelper by lazy {
         AttachmentHelper(
             lifecycle,
@@ -76,6 +77,7 @@ class MessageFragment : BaseFragment() {
         viewModel.apply {
             loadMessages(channelUrl)
             getChannel(channelUrl)
+            viewModel.typingStatus(channelUrl, isTyping)
         }
         attachmentHelper
     }
@@ -85,6 +87,7 @@ class MessageFragment : BaseFragment() {
 
         val channel by viewModel.channel.observeAsState()
         val isOnline by viewModel.isOnline.collectAsState(initial = false)
+        val showTypingStatus by viewModel.showTypingStatus.observeAsState(initial = false)
 
         TopAppBar {
             IconButton(
@@ -119,7 +122,8 @@ class MessageFragment : BaseFragment() {
                 )
                 AnimatedVisibility(visible = isOnline) {
                     Text(
-                        text = "Online", style = TextStyle(
+                        text = if (showTypingStatus) "typing..." else "online",
+                        style = TextStyle(
                             fontSize = 12.sp,
                             color = Color.LightGray,
                         )
@@ -143,6 +147,9 @@ class MessageFragment : BaseFragment() {
 
         fun onMessageChange(newMessage: String) {
             messageToSend.value = newMessage
+            lifecycleScope.launch {
+                isTyping.emit(newMessage.isNotEmpty())
+            }
         }
 
         ChatScreen(
@@ -291,7 +298,7 @@ class MessageFragment : BaseFragment() {
 
                 }
                 is ChannelState.TypingStatusUpdated -> {
-
+                    viewModel.showTypingIndicator(state.typingUsers.isNotEmpty())
                 }
             }
         }.launchIn(lifecycleScope)
