@@ -1,5 +1,6 @@
 package com.arjun.sendbird.ui.message.components
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,19 +11,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.arjun.sendbird.R
 import com.arjun.sendbird.util.isMe
+import com.arjun.sendbird.util.timeStamp
 import com.arjun.sendbird.util.widthDp
 import com.google.accompanist.glide.rememberGlidePainter
 import com.sendbird.android.FileMessage
+import com.sendbird.android.GroupChannel
 
+@ExperimentalAnimationApi
 @Composable
 fun FileMessageCard(
-    message: FileMessage
+    message: FileMessage,
+    channel: GroupChannel?
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -84,6 +91,23 @@ fun FileMessageCard(
                             vertical = 8.dp
                         )
                 )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.align(Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = message.timeStamp(),
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    MessageStatus(message = message, channel = channel)
+                }
             }
 
         }

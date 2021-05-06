@@ -123,7 +123,7 @@ class ChannelListFragment : BaseFragment() {
                                 modifier = Modifier
                                     .align(Alignment.Bottom)
                                     .padding(16.dp),
-                                color = Color.LightGray
+                                color = Color.Gray
                             )
                         }
 

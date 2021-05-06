@@ -187,6 +187,8 @@ class MessageFragment : BaseFragment() {
         onSendClick: () -> Unit,
         onAttachmentClick: () -> Unit,
     ) {
+        val channel by viewModel.channel.observeAsState()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -209,8 +211,8 @@ class MessageFragment : BaseFragment() {
 
                     items(messages) { message ->
                         when (message is FileMessage) {
-                            true -> FileMessageCard(message = message)
-                            false -> TextMessageCard(message = message)
+                            true -> FileMessageCard(message = message, channel = channel)
+                            false -> TextMessageCard(message = message, channel = channel)
                         }
 
                     }

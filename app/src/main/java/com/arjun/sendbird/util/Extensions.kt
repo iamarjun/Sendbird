@@ -6,6 +6,7 @@ import com.sendbird.android.BaseMessage
 import com.sendbird.android.SendBird
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -16,6 +17,15 @@ fun BaseMessage.getHumanReadableDate(): String {
             .toLocalDate()
 
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM, dd")
+    return formatter.format(date)
+}
+
+fun BaseMessage.timeStamp(): String {
+    val date: LocalTime =
+        Instant.ofEpochMilli(createdAt).atZone(ZoneId.systemDefault())
+            .toLocalTime()
+
+    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
     return formatter.format(date)
 }
 
