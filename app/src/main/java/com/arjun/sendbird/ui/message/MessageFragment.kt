@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -32,6 +31,10 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import com.arjun.sendbird.R
 import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.base.BaseFragment
@@ -41,6 +44,7 @@ import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage
+import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,6 +63,7 @@ class MessageFragment : BaseFragment() {
     private val channelUrl by lazy { args.channelUrl }
     private val viewModel by viewModels<MessageViewModel>()
     private val isTyping = MutableStateFlow(false)
+    private var firstLoad = true
 
     private val attachmentHelper by lazy {
         AttachmentHelper(
@@ -75,7 +80,6 @@ class MessageFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.apply {
-            loadMessages(channelUrl)
             getChannel(channelUrl)
             viewModel.typingStatus(channelUrl, isTyping)
         }
@@ -144,7 +148,9 @@ class MessageFragment : BaseFragment() {
         bottomSheetScaffoldState: BottomSheetScaffoldState,
         coroutineScope: CoroutineScope,
     ) {
-        val messages by viewModel.groupedMessages.observeAsState(mapOf())
+
+        val channel by viewModel.channel.observeAsState()
+        val lazyMessages = viewModel.messages.collectAsLazyPagingItems()
 
         val messageToSend = remember {
             mutableStateOf("")
@@ -159,12 +165,13 @@ class MessageFragment : BaseFragment() {
 
         ChatScreen(
             paddingValues = paddingValues,
-            groupedMessages = messages,
             message = messageToSend.value,
             onMessageChange = ::onMessageChange,
             onSendClick = {
-                viewModel.sendMessage(channelUrl, messageToSend.value)
-                onMessageChange("")
+                viewModel.sendMessage(channelUrl, messageToSend.value) {
+                    lazyMessages.refresh()
+                    onMessageChange("")
+                }
             },
             onAttachmentClick = {
                 coroutineScope.launch {
@@ -174,20 +181,22 @@ class MessageFragment : BaseFragment() {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
                     }
                 }
-            }
+            },
+            channel,
+            lazyMessages,
         )
     }
 
     @Composable
     private fun ChatScreen(
         paddingValues: PaddingValues,
-        groupedMessages: Map<String, List<BaseMessage>>,
         message: String,
         onMessageChange: (String) -> Unit,
         onSendClick: () -> Unit,
         onAttachmentClick: () -> Unit,
+        channel: GroupChannel?,
+        lazyMessages: LazyPagingItems<BaseMessage>
     ) {
-        val channel by viewModel.channel.observeAsState()
 
         Column(
             modifier = Modifier
@@ -200,24 +209,42 @@ class MessageFragment : BaseFragment() {
                     .fillMaxWidth()
                     .weight(1f),
                 reverseLayout = true,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                groupedMessages.forEach { (date, messages) ->
-
-                    stickyHeader {
-                        DateCard(date = date)
+                if (lazyMessages.loadState.refresh == LoadState.Loading && firstLoad) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(32.dp)
+                        )
                     }
+                    firstLoad = false
+                }
 
-                    items(messages) { message ->
-                        when (message is FileMessage) {
-                            true -> FileMessageCard(message = message, channel = channel)
-                            false -> TextMessageCard(message = message, channel = channel)
-                        }
+                items(lazyPagingItems = lazyMessages) { message ->
+                    if (message == null)
+                        return@items
 
+                    when (message is FileMessage) {
+                        true -> FileMessageCard(message = message, channel = channel)
+                        false -> TextMessageCard(message = message, channel = channel)
+                    }
+                }
+
+                if (lazyMessages.loadState.append == LoadState.Loading) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Divider()
 

@@ -1,15 +1,17 @@
 package com.arjun.sendbird.ui.message
 
 import androidx.lifecycle.*
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.arjun.sendbird.dataSource.MessagePagingSource
 import com.arjun.sendbird.repository.ChatRepository
-import com.arjun.sendbird.util.getHumanReadableDate
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
@@ -21,22 +23,35 @@ class MessageViewModel @Inject constructor(
     private val repository: ChatRepository,
 ) : ViewModel() {
 
+    private val _messages = MutableStateFlow<PagingData<BaseMessage>>(PagingData.empty())
+    val messages = _messages.asStateFlow()
+
+    fun getMessages(channel: GroupChannel): Flow<PagingData<BaseMessage>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = CHANNEL_MESSAGE_LIMIT,
+                enablePlaceholders = true
+            ),
+            pagingSourceFactory = { MessagePagingSource(channel) }
+        ).flow
+    }
+
     val channelState = repository.observeChannels()
 
-    private val _messages by lazy { MutableLiveData<List<BaseMessage>>() }
-    private val messages: LiveData<List<BaseMessage>>
-        get() = _messages
-
-    val groupedMessages = messages.map {
-        it.groupBy { it.getHumanReadableDate() }
-    }
-
-    fun loadMessages(channelUrl: String) {
-        viewModelScope.launch {
-            val messages = repository.loadMessages(channelUrl = channelUrl)
-            _messages.value = messages
-        }
-    }
+//    private val _messages by lazy { MutableLiveData<List<BaseMessage>>() }
+//    private val messages: LiveData<List<BaseMessage>>
+//        get() = _messages
+//
+//    val groupedMessages = messages.map {
+//        it.groupBy { it.getHumanReadableDate() }
+//    }
+//
+//    fun loadMessages(channelUrl: String) {
+//        viewModelScope.launch {
+//            val messages = repository.loadMessages(channelUrl = channelUrl)
+//            _messages.value = messages
+//        }
+//    }
 
     private val _channel by lazy { MutableLiveData<GroupChannel>() }
     val channel: LiveData<GroupChannel>
@@ -46,6 +61,13 @@ class MessageViewModel @Inject constructor(
         viewModelScope.launch {
             val channel = repository.getChannel(channelUrl = channelUrl)
             _channel.value = channel
+            _messages.emitAll(Pager(
+                config = PagingConfig(
+                    pageSize = CHANNEL_MESSAGE_LIMIT,
+                    enablePlaceholders = true
+                ),
+                pagingSourceFactory = { MessagePagingSource(channel) }
+            ).flow)
         }
     }
 
@@ -54,20 +76,19 @@ class MessageViewModel @Inject constructor(
     }
 
     fun addMessage(message: BaseMessage) {
-        val m = messages.value?.toMutableList()
-        m?.add(0, message)
-        _messages.value = (m)
+//        val m = messages.value?.toMutableList()
+//        m?.add(0, message)
+//        _messages.value = (m)
     }
 
-    fun sendMessage(channelUrl: String, message: String) {
+    fun sendMessage(channelUrl: String, message: String, onMessageSend: () -> Unit) {
         viewModelScope.launch {
             try {
-                val msg = repository.sendMessage(channelUrl, message)
-                addMessage(msg)
+                repository.sendMessage(channelUrl, message)
+                onMessageSend()
             } catch (e: Exception) {
                 Timber.e(e)
             }
-
         }
     }
 
@@ -97,5 +118,9 @@ class MessageViewModel @Inject constructor(
                 isTyping = isTyping
             )
         }
+    }
+
+    companion object {
+        private const val CHANNEL_MESSAGE_LIMIT = 30
     }
 }
