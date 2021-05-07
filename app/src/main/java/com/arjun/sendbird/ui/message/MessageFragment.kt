@@ -8,8 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -144,7 +143,7 @@ class MessageFragment : BaseFragment() {
         bottomSheetScaffoldState: BottomSheetScaffoldState,
         coroutineScope: CoroutineScope,
     ) {
-        val messages by viewModel.groupedMessages.observeAsState(mapOf())
+        val messages by viewModel.messages.observeAsState(emptyList())
 
         val messageToSend = remember {
             mutableStateOf("")
@@ -159,7 +158,7 @@ class MessageFragment : BaseFragment() {
 
         ChatScreen(
             paddingValues = paddingValues,
-            groupedMessages = messages,
+            messages = messages,
             message = messageToSend.value,
             onMessageChange = ::onMessageChange,
             onSendClick = {
@@ -181,41 +180,42 @@ class MessageFragment : BaseFragment() {
     @Composable
     private fun ChatScreen(
         paddingValues: PaddingValues,
-        groupedMessages: Map<String, List<BaseMessage>>,
+        messages: List<BaseMessage>,
         message: String,
         onMessageChange: (String) -> Unit,
         onSendClick: () -> Unit,
         onAttachmentClick: () -> Unit,
     ) {
         val channel by viewModel.channel.observeAsState()
+        val page by viewModel.page.observeAsState(initial = 1)
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues)
         ) {
+            val state = rememberLazyListState()
+
+            Timber.d("First visible item index: ${state.firstVisibleItemIndex}")
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 reverseLayout = true,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                state = state
             ) {
 
-                groupedMessages.forEach { (date, messages) ->
-
-                    stickyHeader {
-                        DateCard(date = date)
+                itemsIndexed(messages) { index, message ->
+                    when (message is FileMessage) {
+                        true -> FileMessageCard(message = message, channel = channel)
+                        false -> TextMessageCard(message = message, channel = channel)
                     }
 
-                    items(messages) { message ->
-                        when (message is FileMessage) {
-                            true -> FileMessageCard(message = message, channel = channel)
-                            false -> TextMessageCard(message = message, channel = channel)
-                        }
-
-                    }
+                    viewModel.onChangeScrollPosition(index)
+                    if (index + 1 >= page * MessageViewModel.PAGE_SIZE)
+                        viewModel.nextPage(channelUrl, message.createdAt)
                 }
             }
 
@@ -312,3 +312,6 @@ class MessageFragment : BaseFragment() {
 
     }
 }
+
+fun LazyListState.isScrolledToTheEnd() =
+    layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
