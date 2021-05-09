@@ -41,7 +41,7 @@ fun BaseChannel.getHumanReadableDate(): String {
 fun getAccessToken(userId: String) = when (userId) {
     "460465" -> "615e13d4bb6f5e0d2815e6182e11c1c619affb14"
     "460466" -> "ee6f6cd6410c96a4bdb6343073de5cbf82dbf233"
-    else -> ""
+    else -> throw IllegalArgumentException("User Id $userId does not exist")
 }
 
 fun Context.widthDp() = resources.displayMetrics.run { widthPixels / density }

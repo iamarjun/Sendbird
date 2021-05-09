@@ -1,4 +1,4 @@
-package com.arjun.sendbird
+package com.arjun.sendbird.data.dataSource.connection
 
 import com.arjun.sendbird.cache.UserManager
 import com.arjun.sendbird.util.getAccessToken
@@ -14,32 +14,26 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ConnectionManager @Inject constructor(
+class ConnectionDataSourceImp @Inject constructor(
     private val userManager: UserManager
-) {
+) : ConnectionDataSource {
 
-    suspend fun connect(userId: String): Boolean {
-
-        val exist: Boolean = suspendCancellableCoroutine { continuation ->
-            SendBird.connect(userId, getAccessToken(userId = userId)) { user, error ->
+    @ExperimentalCoroutinesApi
+    override suspend fun connect(userId: String?): Boolean {
+        val id = userId ?: userManager.getUserId().first()
+        return suspendCancellableCoroutine { continuation ->
+            SendBird.connect(userId, getAccessToken(userId = id)) { user, error ->
                 if (error != null) {
                     Timber.e(error)
-
                     continuation.resumeWithException(error)
                 } else {
-
                     continuation.resume(user != null)
                 }
             }
         }
-
-        if (exist)
-            userManager.saveUserId(userId)
-
-        return exist
     }
 
-    suspend fun disconnect(onDisconnect: () -> Unit) {
+    override suspend fun disconnect(onDisconnect: () -> Unit) {
         SendBird.disconnect {
             onDisconnect()
         }
@@ -47,7 +41,7 @@ class ConnectionManager @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    fun observeConnection(): Flow<Boolean> {
+    override fun observeConnection(): Flow<Boolean> {
 
         return callbackFlow {
             val channelHandler = object : SendBird.ConnectionHandler {
@@ -66,7 +60,11 @@ class ConnectionManager @Inject constructor(
             when (SendBird.getConnectionState()) {
                 SendBird.ConnectionState.OPEN -> offer(false)
 
-                SendBird.ConnectionState.CLOSED -> offer(connect(userManager.getUserId().first()))
+                SendBird.ConnectionState.CLOSED -> offer(
+                    connect(
+                        userManager.getUserId().first()
+                    )
+                )
 
                 else -> {
                 }

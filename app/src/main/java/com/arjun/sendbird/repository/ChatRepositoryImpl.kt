@@ -1,19 +1,18 @@
 package com.arjun.sendbird.repository
 
-import com.arjun.sendbird.dataSource.ChannelDataSource
-import com.arjun.sendbird.dataSource.MessageDataSource
-import com.arjun.sendbird.dataSource.UserDataSource
+import com.arjun.sendbird.data.dataSource.channel.ChannelDataSourceImp
+import com.arjun.sendbird.data.dataSource.MessageDataSource
+import com.arjun.sendbird.data.dataSource.UserDataSource
 import com.arjun.sendbird.model.ChannelState
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
-    private val channelDataSource: ChannelDataSource,
+    private val channelDataSourceImp: ChannelDataSourceImp,
     private val messageDataSource: MessageDataSource,
     private val userDataSource: UserDataSource
 ) : ChatRepository {
@@ -22,11 +21,11 @@ class ChatRepositoryImpl @Inject constructor(
         messageDataSource.getChannel(channelUrl)
 
     override suspend fun loadChannels(): List<GroupChannel> =
-        channelDataSource.loadChannels()
+        channelDataSourceImp.loadChannels()
 
     @ExperimentalCoroutinesApi
     override fun observeChannels(): Flow<ChannelState> =
-        channelDataSource.observeChannels()
+        channelDataSourceImp.observeChannels()
 
     override suspend fun sendMessage(channelUrl: String, message: String): BaseMessage =
         messageDataSource.sendMessage(channelUrl, message)

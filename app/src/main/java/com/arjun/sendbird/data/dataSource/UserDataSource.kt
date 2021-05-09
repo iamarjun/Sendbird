@@ -1,4 +1,4 @@
-package com.arjun.sendbird.dataSource
+package com.arjun.sendbird.data.dataSource
 
 import com.sendbird.android.ApplicationUserListQuery
 import com.sendbird.android.SendBird

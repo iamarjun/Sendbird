@@ -1,4 +1,4 @@
-package com.arjun.sendbird.dataSource
+package com.arjun.sendbird.data.dataSource.channel
 
 
 import com.arjun.sendbird.model.ChannelState
@@ -14,9 +14,9 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ChannelDataSource @Inject constructor() {
+class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
-    suspend fun loadChannels(): List<GroupChannel> {
+    override suspend fun loadChannels(): List<GroupChannel> {
         return suspendCancellableCoroutine { continuation ->
 
             val groupChannelListQueryResultHandler =
@@ -38,7 +38,7 @@ class ChannelDataSource @Inject constructor() {
     }
 
     @ExperimentalCoroutinesApi
-    fun observeChannels(): Flow<ChannelState> {
+    override fun observeChannels(): Flow<ChannelState> {
         return callbackFlow {
             val channelHandler = object : ChannelHandler() {
                 override fun onMessageReceived(baseChannel: BaseChannel, message: BaseMessage) {
@@ -80,6 +80,5 @@ class ChannelDataSource @Inject constructor() {
     companion object {
         private const val CHANNEL_LIST_LIMIT = 15
         private const val CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_DETAIL"
-        private const val CHANNEL_MESSAGE_LIMIT = 20
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSourceImp
 import com.arjun.sendbird.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val connectionManager: ConnectionManager,
+    private val connectionDataSourceImp: ConnectionDataSourceImp,
 ) : ViewModel() {
 
     private val _userId by lazy { MutableLiveData<String>() }
@@ -30,14 +31,14 @@ class MainViewModel @Inject constructor(
 
 
     @ExperimentalCoroutinesApi
-    val connectionStatus = connectionManager.observeConnection()
+    val connectionStatus = connectionDataSourceImp.observeConnection()
 
     fun login(userId: String) {
         viewModelScope.launch {
             _userExist.value = (Resource.Loading())
             try {
-                val exist = connectionManager.connect(userId = userId)
-                _userExist.value = (Resource.Success(exist))
+                val exist = connectionDataSourceImp.connect(userId = userId)
+                _userExist.value = (Resource.Success(true))
             } catch (e: Exception) {
                 _userExist.value = (Resource.Error(e))
             }
@@ -47,7 +48,7 @@ class MainViewModel @Inject constructor(
 
     fun logout(onLogout: () -> Unit) {
         viewModelScope.launch {
-            connectionManager.disconnect {
+            connectionDataSourceImp.disconnect {
                 onLogout()
             }
         }
