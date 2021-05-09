@@ -8,5 +8,7 @@ interface ChannelDataSource {
 
     suspend fun loadChannels(): List<GroupChannel>
 
+    suspend fun getChannel(channelUrl: String): GroupChannel
+
     fun observeChannels(): Flow<ChannelState>
 }

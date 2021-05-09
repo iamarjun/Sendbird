@@ -16,6 +16,24 @@ import kotlin.coroutines.resumeWithException
 
 class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
+    override suspend fun getChannel(channelUrl: String): GroupChannel {
+        return suspendCancellableCoroutine { continuation ->
+
+            val groupChannelGetHandler =
+                GroupChannel.GroupChannelGetHandler { groupChannel, error ->
+
+                    if (error != null) {
+                        Timber.e(error)
+                        continuation.resumeWithException(error)
+                    } else {
+                        continuation.resume(groupChannel)
+                    }
+                }
+
+            GroupChannel.getChannel(channelUrl, groupChannelGetHandler)
+        }
+    }
+
     override suspend fun loadChannels(): List<GroupChannel> {
         return suspendCancellableCoroutine { continuation ->
 

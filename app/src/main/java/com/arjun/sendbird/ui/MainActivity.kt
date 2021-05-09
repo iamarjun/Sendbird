@@ -5,11 +5,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import dagger.hilt.android.AndroidEntryPoint
 
+@ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @ExperimentalAnimatedInsets

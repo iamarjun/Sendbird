@@ -10,6 +10,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+const val PAGE_SIZE = 30
 fun BaseMessage.isMe() = sender?.userId == SendBird.getCurrentUser().userId
 fun BaseMessage.getHumanReadableDate(): String {
     val date: LocalDate =

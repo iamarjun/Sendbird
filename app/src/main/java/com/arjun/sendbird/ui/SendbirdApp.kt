@@ -1,6 +1,7 @@
 package com.arjun.sendbird.ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -9,8 +10,12 @@ import androidx.navigation.compose.composable
 import com.arjun.sendbird.theme.SendbirdTheme
 import com.arjun.sendbird.ui.channelList.ChannelList
 import com.arjun.sendbird.ui.login.Login
+import com.arjun.sendbird.ui.message.Message
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
+@ExperimentalFoundationApi
 @ExperimentalAnimatedInsets
 @ExperimentalAnimationApi
 @ExperimentalMaterialApi
@@ -35,6 +40,18 @@ fun SendbirdApp(
                 ChannelList(
                     sendbirdViewModel = sendbirdViewModel,
                     navController = navController
+                )
+            }
+
+            composable(route = "messages/{channelUrl}") { backStackEntry ->
+
+                val channelUrl =
+                    backStackEntry.arguments?.getString("channelUrl") ?: return@composable
+
+                Message(
+                    channelUrl = channelUrl,
+                    sendbirdViewModel = sendbirdViewModel,
+                    navController = navController,
                 )
             }
         }

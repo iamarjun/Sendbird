@@ -51,7 +51,7 @@ fun ChannelList(
             ToolBar(
                 logout = {
                     sendbirdViewModel.logout {
-                        navController.navigate("login")
+                        navController.navigate("messages")
                     }
                 }
             )
@@ -73,7 +73,7 @@ fun ChannelList(
                 modifier = modifier,
                 channels = state.channelList
             ) { channelUrl ->
-                navController.navigate("channel_list/{$channelUrl}")
+                navController.navigate("messages/$channelUrl")
             }
         }
 
