@@ -1,14 +1,15 @@
-package com.arjun.sendbird.dataSource
+package com.arjun.sendbird.data.dataSource.messages
 
+import com.arjun.sendbird.util.PAGE_SIZE
 import com.sendbird.android.BaseChannel
-import com.sendbird.android.BaseChannel.*
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage.ThumbnailSize
 import com.sendbird.android.FileMessageParams
 import com.sendbird.android.GroupChannel
-import com.sendbird.android.GroupChannel.GroupChannelGetHandler
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
@@ -17,30 +18,12 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class MessageDataSource @Inject constructor() {
+class MessageDataSourceImp @Inject constructor() : MessageDataSource {
+    private val localMessages = mutableListOf<BaseMessage>()
 
-    suspend fun getChannel(channelUrl: String): GroupChannel {
+    override suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage {
         return suspendCancellableCoroutine { continuation ->
-
-            val groupChannelGetHandler = GroupChannelGetHandler { groupChannel, error ->
-
-                if (error != null) {
-                    Timber.e(error)
-                    continuation.resumeWithException(error)
-                } else {
-                    continuation.resume(groupChannel)
-                }
-            }
-
-            GroupChannel.getChannel(channelUrl, groupChannelGetHandler)
-        }
-    }
-
-    suspend fun sendMessage(channelUrl: String, message: String): BaseMessage {
-        val channel = getChannel(channelUrl)
-
-        return suspendCancellableCoroutine { continuation ->
-            val messageHandler = SendUserMessageHandler { message, error ->
+            val messageHandler = BaseChannel.SendUserMessageHandler { message, error ->
                 if (error != null) {
                     Timber.e(error)
                 }
@@ -50,11 +33,10 @@ class MessageDataSource @Inject constructor() {
         }
     }
 
-    suspend fun sendFileMessage(
-        channelUrl: String,
+    override suspend fun sendFileMessage(
+        channel: GroupChannel,
         fileInfo: Hashtable<String, Any?>
     ): BaseMessage {
-        val channel = getChannel(channelUrl)
 
         // Specify two dimensions of thumbnails to generate
         val thumbnailSizes: MutableList<ThumbnailSize> = ArrayList()
@@ -77,7 +59,7 @@ class MessageDataSource @Inject constructor() {
             .setThumbnailSizes(thumbnailSizes)
 
         return suspendCancellableCoroutine { continuation ->
-            val messageHandler = SendFileMessageHandler { fileMessage, error ->
+            val messageHandler = BaseChannel.SendFileMessageHandler { fileMessage, error ->
                 if (error != null) {
                     Timber.e(error)
                 }
@@ -87,13 +69,34 @@ class MessageDataSource @Inject constructor() {
         }
     }
 
-    suspend fun loadMessages(channelUrl: String, createdAt: Long?): List<BaseMessage> {
+    @ExperimentalCoroutinesApi
+    override fun loadMessages(
+        channel: GroupChannel,
+        currentScrollPosition: Flow<Int>,
+        pageNo: Flow<Int>,
+    ): Flow<List<BaseMessage>> = combine(
+        currentScrollPosition,
+        pageNo
+    ) { position, page ->
 
-        val channel = getChannel(channelUrl)
+        if (position == 0 && page == 1) {
+            val messages = loadMessages(channel = channel, createdAt = Long.MAX_VALUE)
+            localMessages.addAll(messages)
+        }
+        //TODO: Improve pagination logic
+        if (position + 1 >= page * PAGE_SIZE) {
+            val createdAt = localMessages.last().createdAt
+            val messages = loadMessages(channel = channel, createdAt = createdAt)
+            localMessages.addAll(messages)
+        }
 
-        return suspendCancellableCoroutine { continuation ->
+        localMessages
+    }
 
-            val messageHandler = GetMessagesHandler { messages, error ->
+    private suspend fun loadMessages(channel: GroupChannel, createdAt: Long): List<BaseMessage> =
+        suspendCancellableCoroutine { continuation ->
+
+            val messageHandler = BaseChannel.GetMessagesHandler { messages, error ->
                 if (error != null) {
                     Timber.e(error)
                     continuation.resumeWithException(error)
@@ -103,7 +106,7 @@ class MessageDataSource @Inject constructor() {
             }
 
             channel.getPreviousMessagesByTimestamp(
-                createdAt ?: Long.MAX_VALUE,
+                createdAt,
                 false,
                 CHANNEL_MESSAGE_LIMIT,
                 true,
@@ -114,10 +117,9 @@ class MessageDataSource @Inject constructor() {
                 messageHandler
             )
         }
-    }
 
-    suspend fun sendTypingStatus(channelUrl: String, isTyping: Flow<Boolean>) {
-        val channel = getChannel(channelUrl)
+
+    override suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Flow<Boolean>) {
         isTyping.collect {
             if (it) {
                 channel.startTyping()
@@ -127,17 +129,17 @@ class MessageDataSource @Inject constructor() {
         }
     }
 
-    suspend fun markMessagesAsRead(channelUrl: String) = getChannel(channelUrl).markAsRead()
+    override suspend fun markMessagesAsRead(channel: GroupChannel) = channel.markAsRead()
 
-    suspend fun getUnreadMemberCount(
-        channelUrl: String,
+    override suspend fun getUnreadMemberCount(
+        channel: GroupChannel,
         message: BaseMessage
-    ) = getChannel(channelUrl).getUnreadMemberCount(message)
+    ) = channel.getUnreadMemberCount(message)
 
-    suspend fun getUndeliveredMemberCount(
-        channelUrl: String,
+    override suspend fun getUndeliveredMemberCount(
+        channel: GroupChannel,
         message: BaseMessage
-    ) = getChannel(channelUrl).getUndeliveredMemberCount(message)
+    ) = channel.getUndeliveredMemberCount(message)
 
     companion object {
         private const val CHANNEL_MESSAGE_LIMIT = 30

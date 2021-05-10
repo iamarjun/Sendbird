@@ -1,4 +1,4 @@
-package com.arjun.sendbird.dataSource
+package com.arjun.sendbird.data.dataSource.user
 
 import com.sendbird.android.ApplicationUserListQuery
 import com.sendbird.android.SendBird
@@ -13,7 +13,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class UserDataSource @Inject constructor() {
+class UserDataSourceImp @Inject constructor(): UserDataSource {
 
     private suspend fun userListQuery(listQuery: ApplicationUserListQuery): List<User> {
         return suspendCoroutine { continuation ->
@@ -30,7 +30,7 @@ class UserDataSource @Inject constructor() {
         }
     }
 
-    fun observeUserOnlinePresence(userId: String?): Flow<Boolean> = flow {
+    override fun observeUserOnlinePresence(userId: String?): Flow<Boolean> = flow {
 
         userId ?: return@flow
 

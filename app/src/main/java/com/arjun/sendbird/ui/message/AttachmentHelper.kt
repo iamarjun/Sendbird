@@ -123,3 +123,8 @@ class AttachmentHelper(
         private const val PERMISSION_KEY = "permission"
     }
 }
+
+sealed class Attachments {
+    object Camera: Attachments()
+    object Gallery: Attachments()
+}
