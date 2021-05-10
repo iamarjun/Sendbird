@@ -80,7 +80,7 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.35.1")
 
     implementation("com.google.accompanist:accompanist-glide:0.9.0")
-    implementation("com.google.accompanist:accompanist-insets:0.9.0")
+    implementation("com.google.accompanist:accompanist-insets:0.9.1")
 
     implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
 
