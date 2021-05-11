@@ -1,6 +1,6 @@
 package com.arjun.sendbird.data.dataSource.connection
 
-import com.arjun.sendbird.cache.UserManager
+import com.arjun.sendbird.data.cache.UserManager
 import com.arjun.sendbird.util.getAccessToken
 import com.sendbird.android.SendBird
 import kotlinx.coroutines.ExperimentalCoroutinesApi

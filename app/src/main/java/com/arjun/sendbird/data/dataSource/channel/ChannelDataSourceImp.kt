@@ -1,7 +1,7 @@
 package com.arjun.sendbird.data.dataSource.channel
 
 
-import com.arjun.sendbird.model.ChannelState
+import com.arjun.sendbird.data.model.ChannelState
 import com.sendbird.android.*
 import com.sendbird.android.SendBird.ChannelHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi

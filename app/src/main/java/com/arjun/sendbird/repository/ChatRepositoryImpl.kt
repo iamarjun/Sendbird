@@ -3,7 +3,7 @@
 //import com.arjun.sendbird.data.dataSource.channel.ChannelDataSourceImp
 //import com.arjun.sendbird.data.dataSource.messages.MessageDataSourceImp
 //import com.arjun.sendbird.data.dataSource.user.UserDataSourceImp
-//import com.arjun.sendbird.model.ChannelState
+//import com.arjun.sendbird.data.model.ChannelState
 //import com.sendbird.android.BaseMessage
 //import com.sendbird.android.GroupChannel
 //import kotlinx.coroutines.ExperimentalCoroutinesApi

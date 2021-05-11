@@ -6,7 +6,7 @@ import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
-import com.arjun.sendbird.model.ChannelState
+import com.arjun.sendbird.data.model.ChannelState
 import com.arjun.sendbird.ui.channelList.ChannelListState
 import com.arjun.sendbird.ui.login.LoginScreenState
 import com.arjun.sendbird.ui.message.MessageScreenState

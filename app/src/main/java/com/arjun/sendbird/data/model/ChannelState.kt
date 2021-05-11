@@ -1,4 +1,4 @@
-package com.arjun.sendbird.model
+package com.arjun.sendbird.data.model
 
 import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage

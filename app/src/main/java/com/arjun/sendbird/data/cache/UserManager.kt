@@ -1,4 +1,4 @@
-package com.arjun.sendbird.cache
+package com.arjun.sendbird.data.cache
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
