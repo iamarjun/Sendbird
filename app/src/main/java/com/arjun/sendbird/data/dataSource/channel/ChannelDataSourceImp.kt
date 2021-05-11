@@ -7,6 +7,8 @@ import com.sendbird.android.SendBird.ChannelHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
@@ -16,8 +18,14 @@ import kotlin.coroutines.resumeWithException
 
 class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
-    override suspend fun getChannel(channelUrl: String): GroupChannel {
-        return suspendCancellableCoroutine { continuation ->
+    private val _channel = MutableStateFlow<GroupChannel?>(null)
+    override val channel: Flow<GroupChannel?> = _channel.asStateFlow()
+
+    private val _channels = MutableStateFlow(emptyList<GroupChannel>())
+    override val channels: Flow<List<GroupChannel>> = _channels.asStateFlow()
+
+    override suspend fun getChannel(channelUrl: String) {
+        val channel: GroupChannel = suspendCancellableCoroutine { continuation ->
 
             val groupChannelGetHandler =
                 GroupChannel.GroupChannelGetHandler { groupChannel, error ->
@@ -32,10 +40,12 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
             GroupChannel.getChannel(channelUrl, groupChannelGetHandler)
         }
+
+        _channel.emit(channel)
     }
 
-    override suspend fun loadChannels(): List<GroupChannel> {
-        return suspendCancellableCoroutine { continuation ->
+    override suspend fun loadChannels() {
+        val channels: List<GroupChannel> = suspendCancellableCoroutine { continuation ->
 
             val groupChannelListQueryResultHandler =
                 GroupChannelListQuery.GroupChannelListQueryResultHandler { result, error ->
@@ -53,11 +63,15 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
                 it.next(groupChannelListQueryResultHandler)
             }
         }
+
+        _channels.emit(channels)
     }
 
     @ExperimentalCoroutinesApi
-    override fun observeChannels(): Flow<ChannelState> {
-        return callbackFlow {
+    override val channelState: Flow<ChannelState>
+        get() = callbackFlow {
+            offer(ChannelState.Init)
+
             val channelHandler = object : ChannelHandler() {
                 override fun onMessageReceived(baseChannel: BaseChannel, message: BaseMessage) {
                     offer(ChannelState.MessageAdded(message = message))
@@ -93,7 +107,7 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
             awaitClose { SendBird.removeChannelHandler(CHANNEL_HANDLER_ID) }
         }
-    }
+
 
     companion object {
         private const val CHANNEL_LIST_LIMIT = 15

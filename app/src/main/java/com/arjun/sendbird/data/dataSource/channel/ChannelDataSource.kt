@@ -6,9 +6,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChannelDataSource {
 
-    suspend fun loadChannels(): List<GroupChannel>
+    val channel: Flow<GroupChannel?>
 
-    suspend fun getChannel(channelUrl: String): GroupChannel
+    val channels: Flow<List<GroupChannel>>
 
-    fun observeChannels(): Flow<ChannelState>
+    suspend fun loadChannels()
+
+    suspend fun getChannel(channelUrl: String)
+
+    val channelState: Flow<ChannelState>
 }

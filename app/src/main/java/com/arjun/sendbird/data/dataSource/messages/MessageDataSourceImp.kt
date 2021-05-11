@@ -8,7 +8,6 @@ import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
@@ -112,13 +111,11 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
     }
 
 
-    override suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Flow<Boolean>) {
-        isTyping.collect {
-            if (it) {
-                channel.startTyping()
-            } else {
-                channel.endTyping()
-            }
+    override suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Boolean) {
+        if (isTyping) {
+            channel.startTyping()
+        } else {
+            channel.endTyping()
         }
     }
 

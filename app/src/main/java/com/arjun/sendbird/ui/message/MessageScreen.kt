@@ -101,7 +101,10 @@ fun Message(
                 messages = state.messages,
                 message = message,
                 onChangeScrollPosition = sendbirdViewModel::onChangeScrollPosition,
-                onMessageChange = { message = it },
+                onMessageChange = {
+                    message = it
+                    sendbirdViewModel.sendTypingStatus(state.toolBarState.channel!!, it.isNotEmpty())
+                },
                 onSendClick = { /*TODO*/ },
                 onAttachmentClick = {}
             )

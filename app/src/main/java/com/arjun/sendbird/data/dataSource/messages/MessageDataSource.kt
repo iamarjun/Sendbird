@@ -23,7 +23,7 @@ interface MessageDataSource {
         createdAt: Long? = null,
     )
 
-    suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Flow<Boolean>)
+    suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Boolean)
 
     suspend fun markMessagesAsRead(channel: GroupChannel)
 

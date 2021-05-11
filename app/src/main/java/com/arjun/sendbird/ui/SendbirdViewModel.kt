@@ -6,6 +6,7 @@ import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
+import com.arjun.sendbird.model.ChannelState
 import com.arjun.sendbird.ui.channelList.ChannelListState
 import com.arjun.sendbird.ui.login.LoginScreenState
 import com.arjun.sendbird.ui.message.MessageScreenState
@@ -41,35 +42,22 @@ class SendbirdViewModel @Inject constructor(
 
     fun login(userId: String) {
         viewModelScope.launch {
-            try {
-                combine(
-                    //TODO: expose flow instead of this hack
-                    flowOf(connectionDataSource.connect(userId)),
-                    loading,
-                ) { isUserLoggedIn, loading ->
-                    LoginScreenState(
-                        isLoading = loading,
-                        isUserLoggedIn = isUserLoggedIn
-                    )
-                }.catch {
-                    LoginScreenState(
-                        isLoading = false,
-                        isUserLoggedIn = false,
-                        error = it
-                    )
-                }.collect {
-                    _loginState.value = it
-                }
-            } catch (e: Exception) {
-                /**
-                 *  TODO: Workaround for not exposing a flow in the first place,
-                 *  to catch when the ConnectionDataSource::connect throws an exception
-                 */
-                _loginState.value = LoginScreenState(
+            combine(
+                connectionDataSource.connect(userId),
+                loading,
+            ) { isUserLoggedIn, loading ->
+                LoginScreenState(
+                    isLoading = loading,
+                    isUserLoggedIn = isUserLoggedIn
+                )
+            }.catch {
+                LoginScreenState(
                     isLoading = false,
                     isUserLoggedIn = false,
-                    error = e
+                    error = it
                 )
+            }.collect {
+                _loginState.value = it
             }
         }
     }
@@ -96,9 +84,11 @@ class SendbirdViewModel @Inject constructor(
 
     fun getChannels() {
         viewModelScope.launch {
+            channelDataSource.loadChannels()
+
             combine(
                 loading,
-                flowOf(channelDataSource.loadChannels())
+                channelDataSource.channels
             ) { loading, channels ->
                 ChannelListState(
                     loading = loading,
@@ -123,35 +113,39 @@ class SendbirdViewModel @Inject constructor(
     private val _messageScreenState = MutableStateFlow(MessageScreenState(loading = true))
     val messageScreenState = _messageScreenState.asStateFlow()
 
-    private val channelState = channelDataSource.observeChannels()
     private lateinit var groupChannel: GroupChannel
 
     fun getChannel(channelUrl: String) {
         viewModelScope.launch {
-            val channel = channelDataSource.getChannel(channelUrl = channelUrl)
-            groupChannel = channel
-            val userIdToObserve =
-                channel.members?.find { it.userId != SendBird.getCurrentUser().userId }?.userId
-            messageDataSource.loadMessages(channel = channel)
-            combine(
-                flowOf(channel),
-                messageDataSource.messages,
-                userDataSource.observeUserOnlinePresence(userIdToObserve),
-            ) { groupChannel, messageList, isUserOnline ->
-                MessageScreenState(
-                    loading = false,
-                    toolBarState = ToolBarState(
-                        channel = groupChannel,
-                        isOnline = isUserOnline,
-                        showTypingStatus = false,
-                    ),
-                    messages = messageList,
-                )
-            }.catch {
-                throw it
-            }.collect {
-                _messageScreenState.value = it
-            }
+            channelDataSource.getChannel(channelUrl = channelUrl)
+            channelDataSource.channel
+                .filterNotNull()
+                .collect { channel ->
+                    groupChannel = channel
+                    val userIdToObserve =
+                        channel.members?.find { it.userId != SendBird.getCurrentUser().userId }?.userId
+                    messageDataSource.loadMessages(channel = channel)
+                    combine(
+                        channelDataSource.channel,
+                        messageDataSource.messages,
+                        userDataSource.observeUserOnlinePresence(userIdToObserve),
+                        channelDataSource.channelState
+                    ) { groupChannel, messageList, isUserOnline, channelState ->
+                        MessageScreenState(
+                            loading = false,
+                            toolBarState = ToolBarState(
+                                channel = groupChannel,
+                                isOnline = isUserOnline,
+                                showTypingStatus = channelState is ChannelState.TypingStatusUpdated && channelState.typingUsers.isNotEmpty(),
+                            ),
+                            messages = messageList,
+                        )
+                    }.catch {
+                        throw it
+                    }.collect {
+                        _messageScreenState.value = it
+                    }
+                }
         }
     }
 
@@ -177,5 +171,12 @@ class SendbirdViewModel @Inject constructor(
                 }
         }
     }
+
+    fun sendTypingStatus(channel: GroupChannel, isTyping: Boolean) {
+        viewModelScope.launch {
+            messageDataSource.sendTypingStatus(channel, isTyping)
+        }
+    }
+
 
 }

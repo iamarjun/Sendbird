@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ConnectionDataSource {
 
-    suspend fun connect(userId: String? = null): Boolean
+    fun connect(userId: String? = null): Flow<Boolean>
 
     suspend fun disconnect(onDisconnect: () -> Unit)
 

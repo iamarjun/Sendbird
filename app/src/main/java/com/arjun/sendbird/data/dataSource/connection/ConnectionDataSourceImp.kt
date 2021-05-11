@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,9 +20,9 @@ class ConnectionDataSourceImp @Inject constructor(
 ) : ConnectionDataSource {
 
     @ExperimentalCoroutinesApi
-    override suspend fun connect(userId: String?): Boolean {
+    override fun connect(userId: String?): Flow<Boolean> = flow {
         val id = userId ?: userManager.getUserId().first()
-        return suspendCancellableCoroutine { continuation ->
+        val userExist: Boolean = suspendCancellableCoroutine { continuation ->
             SendBird.connect(userId, getAccessToken(userId = id)) { user, error ->
                 if (error != null) {
                     Timber.e(error)
@@ -31,6 +32,8 @@ class ConnectionDataSourceImp @Inject constructor(
                 }
             }
         }
+
+        emit(userExist)
     }
 
     override suspend fun disconnect(onDisconnect: () -> Unit) {
@@ -63,7 +66,7 @@ class ConnectionDataSourceImp @Inject constructor(
                 SendBird.ConnectionState.CLOSED -> offer(
                     connect(
                         userManager.getUserId().first()
-                    )
+                    ).first()
                 )
 
                 else -> {

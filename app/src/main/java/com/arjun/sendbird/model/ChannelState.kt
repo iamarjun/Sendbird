@@ -5,6 +5,7 @@ import com.sendbird.android.BaseMessage
 import com.sendbird.android.User
 
 sealed class ChannelState {
+    object Init : ChannelState()
     data class MessageAdded(val message: BaseMessage) : ChannelState()
     data class MessageUpdated(val messageId: Long) : ChannelState()
     data class MessageDeleted(val messageId: Long) : ChannelState()
