@@ -26,6 +26,11 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
 
     private val localMessages = mutableListOf<BaseMessage>()
 
+    override suspend fun addMessage(message: BaseMessage) {
+        localMessages.add(0, message)
+        _messages.emit(localMessages)
+    }
+
     override suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage {
         return suspendCancellableCoroutine { continuation ->
             val messageHandler = BaseChannel.SendUserMessageHandler { message, error ->

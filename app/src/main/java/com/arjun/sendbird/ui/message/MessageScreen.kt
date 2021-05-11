@@ -55,6 +55,7 @@ fun Message(
 ) {
 
     sendbirdViewModel.getChannel(channelUrl = channelUrl)
+    sendbirdViewModel.observeChannelState()
 
     val state by sendbirdViewModel.messageScreenState.collectAsState()
 

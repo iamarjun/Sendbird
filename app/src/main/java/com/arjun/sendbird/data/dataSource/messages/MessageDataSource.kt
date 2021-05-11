@@ -36,4 +36,6 @@ interface MessageDataSource {
         channel: GroupChannel,
         message: BaseMessage
     ): Int
+
+    suspend fun addMessage(message: BaseMessage)
 }

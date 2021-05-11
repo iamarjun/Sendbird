@@ -113,7 +113,37 @@ class SendbirdViewModel @Inject constructor(
     private val _messageScreenState = MutableStateFlow(MessageScreenState(loading = true))
     val messageScreenState = _messageScreenState.asStateFlow()
 
+
+    private val typingStatus = MutableStateFlow(false)
+
     private lateinit var groupChannel: GroupChannel
+
+    fun observeChannelState() {
+        viewModelScope.launch {
+            channelDataSource.channelState.collect {
+                when (it) {
+                    is ChannelState.ChannelUpdated -> {
+                    }
+                    ChannelState.DeliveryReceiptUpdated -> {
+                    }
+                    ChannelState.Init -> {
+                    }
+                    is ChannelState.MessageAdded -> {
+                        messageDataSource.addMessage(it.message)
+                    }
+                    is ChannelState.MessageDeleted -> {
+                    }
+                    is ChannelState.MessageUpdated -> {
+                    }
+                    ChannelState.ReadReceiptUpdated -> {
+                    }
+                    is ChannelState.TypingStatusUpdated -> {
+                        typingStatus.emit(it.typingUsers.isNotEmpty())
+                    }
+                }
+            }
+        }
+    }
 
     fun getChannel(channelUrl: String) {
         viewModelScope.launch {
@@ -129,14 +159,14 @@ class SendbirdViewModel @Inject constructor(
                         channelDataSource.channel,
                         messageDataSource.messages,
                         userDataSource.observeUserOnlinePresence(userIdToObserve),
-                        channelDataSource.channelState
-                    ) { groupChannel, messageList, isUserOnline, channelState ->
+                        typingStatus
+                    ) { groupChannel, messageList, isUserOnline, typingStatus ->
                         MessageScreenState(
                             loading = false,
                             toolBarState = ToolBarState(
                                 channel = groupChannel,
                                 isOnline = isUserOnline,
-                                showTypingStatus = channelState is ChannelState.TypingStatusUpdated && channelState.typingUsers.isNotEmpty(),
+                                showTypingStatus = typingStatus,
                             ),
                             messages = messageList,
                         )
