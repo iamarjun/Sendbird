@@ -1,15 +1,14 @@
 package com.arjun.sendbird.data.dataSource.messages
 
-import com.arjun.sendbird.util.PAGE_SIZE
 import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage.ThumbnailSize
 import com.sendbird.android.FileMessageParams
 import com.sendbird.android.GroupChannel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
@@ -19,6 +18,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class MessageDataSourceImp @Inject constructor() : MessageDataSource {
+
+    private val _messages = MutableStateFlow(emptyList<BaseMessage>())
+    override val messages: Flow<List<BaseMessage>> = _messages.asStateFlow()
+
+    override val lastMessage: BaseMessage
+        get() = localMessages.last()
+
     private val localMessages = mutableListOf<BaseMessage>()
 
     override suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage {
@@ -69,32 +75,14 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
         }
     }
 
-    @ExperimentalCoroutinesApi
-    override fun loadMessages(
-        channel: GroupChannel,
-        currentScrollPosition: Flow<Int>,
-        pageNo: Flow<Int>,
-    ): Flow<List<BaseMessage>> = combine(
-        currentScrollPosition,
-        pageNo
-    ) { position, page ->
 
-        if (position == 0 && page == 1) {
-            val messages = loadMessages(channel = channel, createdAt = Long.MAX_VALUE)
-            localMessages.addAll(messages)
-        }
-        //TODO: Improve pagination logic
-        if (position + 1 >= page * PAGE_SIZE) {
-            val createdAt = localMessages.last().createdAt
-            val messages = loadMessages(channel = channel, createdAt = createdAt)
-            localMessages.addAll(messages)
-        }
+    override suspend fun loadMessages(channel: GroupChannel, createdAt: Long?) {
 
-        localMessages
-    }
+        //Case when activity is recreated and data was already fetched
+        if (localMessages.isNotEmpty() && createdAt == null)
+            return
 
-    private suspend fun loadMessages(channel: GroupChannel, createdAt: Long): List<BaseMessage> =
-        suspendCancellableCoroutine { continuation ->
+        val messages: List<BaseMessage> = suspendCancellableCoroutine { continuation ->
 
             val messageHandler = BaseChannel.GetMessagesHandler { messages, error ->
                 if (error != null) {
@@ -106,7 +94,7 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
             }
 
             channel.getPreviousMessagesByTimestamp(
-                createdAt,
+                createdAt ?: Long.MAX_VALUE,
                 false,
                 CHANNEL_MESSAGE_LIMIT,
                 true,
@@ -117,6 +105,11 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
                 messageHandler
             )
         }
+
+        localMessages.addAll(messages)
+
+        _messages.emit(localMessages)
+    }
 
 
     override suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Flow<Boolean>) {

@@ -7,6 +7,10 @@ import java.util.*
 
 interface MessageDataSource {
 
+    val messages: Flow<List<BaseMessage>>
+
+    val lastMessage: BaseMessage
+
     suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage
 
     suspend fun sendFileMessage(
@@ -14,11 +18,10 @@ interface MessageDataSource {
         fileInfo: Hashtable<String, Any?>
     ): BaseMessage
 
-    fun loadMessages(
+    suspend fun loadMessages(
         channel: GroupChannel,
-        currentScrollPosition: Flow<Int>,
-        pageNo: Flow<Int>,
-    ): Flow<List<BaseMessage>>
+        createdAt: Long? = null,
+    )
 
     suspend fun sendTypingStatus(channel: GroupChannel, isTyping: Flow<Boolean>)
 
