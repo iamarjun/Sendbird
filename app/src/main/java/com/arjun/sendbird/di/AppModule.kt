@@ -2,6 +2,7 @@ package com.arjun.sendbird.di
 
 import android.content.ContentResolver
 import android.content.Context
+import com.arjun.media.MediaStoreClient
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSourceImp
 import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
@@ -42,5 +43,9 @@ abstract class AppModule {
         @Provides
         fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =
             context.contentResolver
+
+        @Provides
+        fun provideMedia(@ApplicationContext context: Context): MediaStoreClient =
+            MediaStoreClient(context = context)
     }
 }
