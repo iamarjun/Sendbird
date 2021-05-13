@@ -50,7 +50,9 @@ android {
 
 dependencies {
 
-    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:1.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+
+    implementation(project(":media"))
 
     implementation("androidx.core:core-ktx:1.3.2")
     implementation("com.google.android.material:material:1.3.0")
