@@ -38,6 +38,7 @@ import com.sendbird.android.FileMessage
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ExperimentalCoroutinesApi
@@ -57,13 +58,16 @@ fun Message(
     sendbirdViewModel.getChannel(channelUrl = channelUrl)
     sendbirdViewModel.observeChannelState()
 
-    val state by sendbirdViewModel.messageScreenState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val messages by sendbirdViewModel.messages.collectAsState(initial = emptyList())
+    val toolbarState by sendbirdViewModel.toolbarState.collectAsState()
 
     var message by remember {
         mutableStateOf("")
     }
 
-    if (state.loading)
+    if (toolbarState.loading)
         Box(modifier = Modifier.fillMaxSize()) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center)
@@ -74,9 +78,9 @@ fun Message(
             scaffoldState = scaffoldState,
             topBar = {
                 ToolBar(
-                    channel = state.toolBarState.channel!!,
-                    isOnline = state.toolBarState.isOnline,
-                    showTypingStatus = state.toolBarState.showTypingStatus,
+                    channel = toolbarState.channel!!,
+                    isOnline = toolbarState.isOnline,
+                    showTypingStatus = toolbarState.showTypingStatus,
                 ) {
                     navController.navigateUp()
                 }
@@ -98,16 +102,27 @@ fun Message(
 
             MessageScreen(
                 modifier = modifier,
-                channel = state.toolBarState.channel!!,
-                messages = state.messages,
+                channel = toolbarState.channel!!,
+                messages = messages,
                 message = message,
                 onChangeScrollPosition = sendbirdViewModel::onChangeScrollPosition,
                 onMessageChange = {
                     message = it
-                    sendbirdViewModel.sendTypingStatus(state.toolBarState.channel!!, it.isNotEmpty())
+                    sendbirdViewModel.sendTypingStatus(toolbarState.channel!!, it.isNotEmpty())
                 },
-                onSendClick = { /*TODO*/ },
-                onAttachmentClick = {}
+                onSendClick = {
+                    sendbirdViewModel.sendMessage(message = message)
+                    message = ""
+                },
+                onAttachmentClick = {
+                    coroutineScope.launch {
+                        if (scaffoldState.bottomSheetState.isCollapsed) {
+                            scaffoldState.bottomSheetState.expand()
+                        } else {
+                            scaffoldState.bottomSheetState.collapse()
+                        }
+                    }
+                }
             )
         }
 }

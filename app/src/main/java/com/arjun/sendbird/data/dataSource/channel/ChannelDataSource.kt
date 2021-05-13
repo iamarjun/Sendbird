@@ -8,9 +8,7 @@ interface ChannelDataSource {
 
     val channel: Flow<GroupChannel?>
 
-    val channels: Flow<List<GroupChannel>>
-
-    suspend fun loadChannels()
+    fun loadChannels(): Flow<List<GroupChannel>>
 
     suspend fun getChannel(channelUrl: String)
 

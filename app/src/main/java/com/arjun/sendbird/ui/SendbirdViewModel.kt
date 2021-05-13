@@ -9,7 +9,6 @@ import com.arjun.sendbird.data.dataSource.user.UserDataSource
 import com.arjun.sendbird.data.model.ChannelState
 import com.arjun.sendbird.ui.channelList.ChannelListState
 import com.arjun.sendbird.ui.login.LoginScreenState
-import com.arjun.sendbird.ui.message.MessageScreenState
 import com.arjun.sendbird.ui.message.ToolBarState
 import com.arjun.sendbird.util.PAGE_SIZE
 import com.sendbird.android.GroupChannel
@@ -35,19 +34,15 @@ class SendbirdViewModel @Inject constructor(
      * ---------------------------------------------------------------------------------------------
      */
 
-    private val loading = MutableStateFlow(false)
 
     private val _loginState = MutableStateFlow(LoginScreenState(isLoading = false))
     val loginState = _loginState.asStateFlow()
 
     fun login(userId: String) {
         viewModelScope.launch {
-            combine(
-                connectionDataSource.connect(userId),
-                loading,
-            ) { isUserLoggedIn, loading ->
+            connectionDataSource.connect(userId).map { isUserLoggedIn ->
                 LoginScreenState(
-                    isLoading = loading,
+                    isLoading = true,
                     isUserLoggedIn = isUserLoggedIn
                 )
             }.catch {
@@ -84,14 +79,9 @@ class SendbirdViewModel @Inject constructor(
 
     fun getChannels() {
         viewModelScope.launch {
-            channelDataSource.loadChannels()
-
-            combine(
-                loading,
-                channelDataSource.channels
-            ) { loading, channels ->
+            channelDataSource.loadChannels().map { channels ->
                 ChannelListState(
-                    loading = loading,
+                    loading = false,
                     channelList = channels
                 )
             }.catch {
@@ -110,13 +100,26 @@ class SendbirdViewModel @Inject constructor(
      * ---------------------------------------------------------------------------------------------
      */
 
-    private val _messageScreenState = MutableStateFlow(MessageScreenState(loading = true))
-    val messageScreenState = _messageScreenState.asStateFlow()
+//    private val _messageScreenState = MutableStateFlow(MessageScreenState(loading = true))
+//    val messageScreenState = _messageScreenState.asStateFlow()
 
+    private val _toolbarState = MutableStateFlow(ToolBarState(loading = true))
+    val toolbarState = _toolbarState.asStateFlow()
+
+    val messages = messageDataSource.messages
 
     private val typingStatus = MutableStateFlow(false)
 
     private lateinit var groupChannel: GroupChannel
+
+    fun sendMessage(message: String) {
+        viewModelScope.launch {
+            if (::groupChannel.isInitialized.not())
+                return@launch
+
+            messageDataSource.sendMessage(groupChannel, message)
+        }
+    }
 
     fun observeChannelState() {
         viewModelScope.launch {
@@ -154,26 +157,24 @@ class SendbirdViewModel @Inject constructor(
                     groupChannel = channel
                     val userIdToObserve =
                         channel.members?.find { it.userId != SendBird.getCurrentUser().userId }?.userId
+
                     messageDataSource.loadMessages(channel = channel)
+
                     combine(
-                        channelDataSource.channel,
-                        messageDataSource.messages,
-                        userDataSource.observeUserOnlinePresence(userIdToObserve),
-                        typingStatus
-                    ) { groupChannel, messageList, isUserOnline, typingStatus ->
-                        MessageScreenState(
+                        userDataSource.observeUserOnlinePresence(userIdToObserve)
+                            .stateIn(viewModelScope),
+                        typingStatus.asStateFlow()
+                    ) { isUserOnline, typingStatus ->
+                        ToolBarState(
                             loading = false,
-                            toolBarState = ToolBarState(
-                                channel = groupChannel,
-                                isOnline = isUserOnline,
-                                showTypingStatus = typingStatus,
-                            ),
-                            messages = messageList,
+                            channel = channel,
+                            isOnline = false,
+                            showTypingStatus = false
                         )
                     }.catch {
                         throw it
                     }.collect {
-                        _messageScreenState.value = it
+                        _toolbarState.value = it
                     }
                 }
         }

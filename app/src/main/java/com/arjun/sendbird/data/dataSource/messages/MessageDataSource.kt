@@ -11,12 +11,12 @@ interface MessageDataSource {
 
     val lastMessage: BaseMessage
 
-    suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage
+    suspend fun sendMessage(channel: GroupChannel, message: String)
 
     suspend fun sendFileMessage(
         channel: GroupChannel,
         fileInfo: Hashtable<String, Any?>
-    ): BaseMessage
+    )
 
     suspend fun loadMessages(
         channel: GroupChannel,

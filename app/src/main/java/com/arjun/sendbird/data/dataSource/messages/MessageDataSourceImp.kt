@@ -31,8 +31,8 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
         _messages.emit(localMessages)
     }
 
-    override suspend fun sendMessage(channel: GroupChannel, message: String): BaseMessage {
-        return suspendCancellableCoroutine { continuation ->
+    override suspend fun sendMessage(channel: GroupChannel, message: String) {
+        val textMessage: BaseMessage = suspendCancellableCoroutine { continuation ->
             val messageHandler = BaseChannel.SendUserMessageHandler { message, error ->
                 if (error != null) {
                     Timber.e(error)
@@ -41,12 +41,13 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
             }
             channel.sendUserMessage(message, messageHandler)
         }
+        addMessage(message = textMessage)
     }
 
     override suspend fun sendFileMessage(
         channel: GroupChannel,
         fileInfo: Hashtable<String, Any?>
-    ): BaseMessage {
+    ) {
 
         // Specify two dimensions of thumbnails to generate
         val thumbnailSizes: MutableList<ThumbnailSize> = ArrayList()
@@ -68,7 +69,7 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
             .setMimeType(mime)
             .setThumbnailSizes(thumbnailSizes)
 
-        return suspendCancellableCoroutine { continuation ->
+        val message: BaseMessage = suspendCancellableCoroutine { continuation ->
             val messageHandler = BaseChannel.SendFileMessageHandler { fileMessage, error ->
                 if (error != null) {
                     Timber.e(error)
@@ -77,6 +78,8 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
             }
             channel.sendFileMessage(params, messageHandler)
         }
+
+        addMessage(message = message)
     }
 
 

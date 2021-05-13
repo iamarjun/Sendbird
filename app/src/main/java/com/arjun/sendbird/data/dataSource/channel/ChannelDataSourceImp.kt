@@ -6,10 +6,7 @@ import com.sendbird.android.*
 import com.sendbird.android.SendBird.ChannelHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import javax.inject.Inject
@@ -20,9 +17,6 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
 
     private val _channel = MutableStateFlow<GroupChannel?>(null)
     override val channel: Flow<GroupChannel?> = _channel.asStateFlow()
-
-    private val _channels = MutableStateFlow(emptyList<GroupChannel>())
-    override val channels: Flow<List<GroupChannel>> = _channels.asStateFlow()
 
     override suspend fun getChannel(channelUrl: String) {
         val channel: GroupChannel = suspendCancellableCoroutine { continuation ->
@@ -44,7 +38,7 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
         _channel.emit(channel)
     }
 
-    override suspend fun loadChannels() {
+    override fun loadChannels(): Flow<List<GroupChannel>> = flow {
         val channels: List<GroupChannel> = suspendCancellableCoroutine { continuation ->
 
             val groupChannelListQueryResultHandler =
@@ -64,7 +58,7 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
             }
         }
 
-        _channels.emit(channels)
+        emit(channels)
     }
 
     @ExperimentalCoroutinesApi
