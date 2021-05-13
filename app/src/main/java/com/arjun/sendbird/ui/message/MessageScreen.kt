@@ -1,5 +1,10 @@
 package com.arjun.sendbird.ui.message
 
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.net.Uri
+import android.os.Build
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,13 +26,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.arjun.media.canReadOwnEntriesInMediaStore
+import com.arjun.media.canReadSharedEntriesInMediaStore
+import com.arjun.media.canWriteOwnEntriesInMediaStore
+import com.arjun.media.canWriteSharedEntriesInMediaStore
 import com.arjun.sendbird.R
+import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.ui.SendbirdViewModel
+import com.arjun.sendbird.ui.SendbirdViewModel.MediaType.IMAGE
 import com.arjun.sendbird.ui.message.components.FileMessageCard
 import com.arjun.sendbird.ui.message.components.MessageInput
 import com.arjun.sendbird.ui.message.components.TextMessageCard
@@ -52,6 +64,9 @@ fun Message(
     channelUrl: String,
     sendbirdViewModel: SendbirdViewModel,
     navController: NavController,
+    actionRequestPermission: ActivityResultLauncher<Array<String>>,
+    actionTakeImage: ActivityResultLauncher<Uri>,
+    actionTakeVideo: ActivityResultLauncher<Uri>,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 ) {
 
@@ -62,6 +77,20 @@ fun Message(
 
     val messages by sendbirdViewModel.messages.collectAsState(initial = emptyList())
     val toolbarState by sendbirdViewModel.toolbarState.collectAsState()
+    val hasNecessaryPermission by sendbirdViewModel.hasNecessaryPermission.collectAsState(initial = false)
+
+    val handleAttachmentClick = {
+        coroutineScope.launch {
+            if (scaffoldState.bottomSheetState.isCollapsed) {
+                scaffoldState.bottomSheetState.expand()
+            } else {
+                scaffoldState.bottomSheetState.collapse()
+            }
+        }
+    }
+
+    if (hasNecessaryPermission)
+        handleAttachmentClick()
 
     var message by remember {
         mutableStateOf("")
@@ -89,7 +118,10 @@ fun Message(
             sheetContent = {
                 BottomSheet {
                     when (it) {
-                        Attachments.Camera -> TODO()
+                        Attachments.Camera -> sendbirdViewModel.createMediaUriForCamera(IMAGE) { uri ->
+                            sendbirdViewModel.saveTemporaryCameraImageUri(uri)
+                            actionTakeImage.launch(uri)
+                        }
                         Attachments.Gallery -> TODO()
                     }
                 }
@@ -99,6 +131,7 @@ fun Message(
         ) {
 
             val modifier = Modifier.padding(it)
+            val context = LocalContext.current
 
             MessageScreen(
                 modifier = modifier,
@@ -115,12 +148,24 @@ fun Message(
                     message = ""
                 },
                 onAttachmentClick = {
-                    coroutineScope.launch {
-                        if (scaffoldState.bottomSheetState.isCollapsed) {
-                            scaffoldState.bottomSheetState.expand()
-                        } else {
-                            scaffoldState.bottomSheetState.collapse()
-                        }
+                    if (
+                        canReadOwnEntriesInMediaStore(context) &&
+                        canWriteOwnEntriesInMediaStore(context) &&
+                        canReadSharedEntriesInMediaStore(context) &&
+                        canWriteSharedEntriesInMediaStore(context)
+                    ) {
+                        handleAttachmentClick()
+                    } else {
+                        val permission = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                            arrayOf(
+                                WRITE_EXTERNAL_STORAGE,
+                                READ_EXTERNAL_STORAGE
+                            ) else
+                            arrayOf(
+                                READ_EXTERNAL_STORAGE
+                            )
+
+                        actionRequestPermission.launch(permission)
                     }
                 }
             )

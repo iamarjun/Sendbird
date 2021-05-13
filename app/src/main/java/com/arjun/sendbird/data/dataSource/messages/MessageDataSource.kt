@@ -1,5 +1,6 @@
 package com.arjun.sendbird.data.dataSource.messages
 
+import com.arjun.media.MediaResource
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,7 @@ interface MessageDataSource {
 
     suspend fun sendFileMessage(
         channel: GroupChannel,
-        fileInfo: Hashtable<String, Any?>
+        mediaResource: MediaResource,
     )
 
     suspend fun loadMessages(

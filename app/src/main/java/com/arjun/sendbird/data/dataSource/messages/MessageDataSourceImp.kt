@@ -1,5 +1,9 @@
 package com.arjun.sendbird.data.dataSource.messages
 
+import android.content.ContentResolver
+import android.net.Uri
+import androidx.core.net.toFile
+import com.arjun.media.MediaResource
 import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage.ThumbnailSize
@@ -11,12 +15,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class MessageDataSourceImp @Inject constructor() : MessageDataSource {
+class MessageDataSourceImp @Inject constructor(
+    private val contentResolver: ContentResolver
+) : MessageDataSource {
 
     private val _messages = MutableStateFlow(emptyList<BaseMessage>())
     override val messages: Flow<List<BaseMessage>> = _messages.asStateFlow()
@@ -46,7 +53,7 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
 
     override suspend fun sendFileMessage(
         channel: GroupChannel,
-        fileInfo: Hashtable<String, Any?>
+        mediaResource: MediaResource
     ) {
 
         // Specify two dimensions of thumbnails to generate
@@ -54,18 +61,14 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
         thumbnailSizes.add(ThumbnailSize(240, 240))
         thumbnailSizes.add(ThumbnailSize(320, 320))
 
-        val name: String = if (fileInfo.containsKey("name"))
-            fileInfo["name"] as String else {
-            "Sendbird File"
-        }
-        val path = fileInfo["path"] as String
-        val file = File(path)
-        val mime = fileInfo["mime"] as String
-        val size = fileInfo["size"] as Int
+        val name = mediaResource.filename
+        val file = copyStreamToFile(mediaResource.uri)
+        val mime = mediaResource.mimeType
+        val size = mediaResource.size
 
         val params = FileMessageParams().setFile(file)
             .setFileName(name)
-            .setFileSize(size)
+            .setFileSize(size.toInt())
             .setMimeType(mime)
             .setThumbnailSizes(thumbnailSizes)
 
@@ -82,6 +85,26 @@ class MessageDataSourceImp @Inject constructor() : MessageDataSource {
         addMessage(message = message)
     }
 
+    /**
+     * Creates a temporary file from a Uri, preparing it for upload.
+     */
+    private fun copyStreamToFile(uri: Uri): File {
+        val outputFile = File.createTempFile("temp", null)
+
+        contentResolver.openInputStream(uri)?.use { input ->
+            val outputStream = FileOutputStream(outputFile)
+            outputStream.use { output ->
+                val buffer = ByteArray(4 * 1024) // buffer size
+                while (true) {
+                    val byteCount = input.read(buffer)
+                    if (byteCount < 0) break
+                    output.write(buffer, 0, byteCount)
+                }
+                output.flush()
+            }
+        }
+        return outputFile
+    }
 
     override suspend fun loadMessages(channel: GroupChannel, createdAt: Long?) {
 

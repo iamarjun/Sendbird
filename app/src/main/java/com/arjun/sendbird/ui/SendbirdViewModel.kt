@@ -1,11 +1,13 @@
 package com.arjun.sendbird.ui
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.net.Uri
+import androidx.lifecycle.*
+import com.arjun.media.*
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
+import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.data.model.ChannelState
 import com.arjun.sendbird.ui.channelList.ChannelListState
 import com.arjun.sendbird.ui.login.LoginScreenState
@@ -14,8 +16,10 @@ import com.arjun.sendbird.util.PAGE_SIZE
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +28,8 @@ class SendbirdViewModel @Inject constructor(
     private val channelDataSource: ChannelDataSource,
     private val messageDataSource: MessageDataSource,
     private val userDataSource: UserDataSource,
+    private val mediaStoreClient: MediaStoreClient,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     /**
@@ -121,6 +127,15 @@ class SendbirdViewModel @Inject constructor(
         }
     }
 
+    fun sendFileMessage(mediaResource: MediaResource) {
+        viewModelScope.launch {
+            if (::groupChannel.isInitialized.not())
+                return@launch
+
+            messageDataSource.sendFileMessage(groupChannel, mediaResource)
+        }
+    }
+
     fun observeChannelState() {
         viewModelScope.launch {
             channelDataSource.channelState.collect {
@@ -209,5 +224,91 @@ class SendbirdViewModel @Inject constructor(
         }
     }
 
+    /**
+     * ---------------------------------------------------------------------------------------------
+     * ---------------------------------------------------------------------------------------------
+     * --------------------------------- PERMISSIONS & MEDIA ---------------------------------------
+     * ---------------------------------------------------------------------------------------------
+     * ---------------------------------------------------------------------------------------------
+     */
+
+    private val _hasNecessaryPermission = MutableStateFlow(false)
+    val hasNecessaryPermission = _hasNecessaryPermission.asStateFlow()
+
+    private val currentMedia: MutableStateFlow<MediaResource?> = MutableStateFlow(null)
+
+//    init {
+//        savedStateHandle.get<Uri>("currentMediaUri")?.let { uri ->
+//            if (hasNecessaryPermission) {
+//                viewModelScope.launch {
+//                    currentMedia.value = mediaStoreClient.getResourceByUri(uri)
+//                }
+//            }
+//        }
+//    }
+
+    init {
+        viewModelScope.launch {
+            currentMedia.filterNotNull().collect {
+                sendFileMessage(it)
+            }
+        }
+    }
+
+    fun hasNecessaryPermission(allMatch: Boolean) {
+        viewModelScope.launch {
+            _hasNecessaryPermission.emit(allMatch)
+        }
+    }
+
+    fun setCurrentMedia(uri: Uri) {
+        viewModelScope.launch {
+            mediaStoreClient.getResourceByUri(uri)?.let {
+                savedStateHandle.set("currentMediaUri", uri)
+                currentMedia.value = mediaStoreClient.getResourceByUri(uri)
+            }
+        }
+    }
+
+    val temporaryCameraImageUri: Uri?
+        get() = savedStateHandle.get("temporaryCameraImageUri")
+
+    fun saveTemporaryCameraImageUri(uri: Uri) {
+        savedStateHandle.set("temporaryCameraImageUri", uri)
+    }
+
+    fun clearTemporaryCameraImageUri() {
+        savedStateHandle.remove<Uri>("temporaryCameraImageUri")
+    }
+
+    fun createMediaUriForCamera(type: MediaType, callback: (uri: Uri) -> Unit) {
+        viewModelScope.launch {
+            val uri = when (type) {
+                MediaType.IMAGE -> mediaStoreClient.createImageUri(
+                    generateFilename(Attachments.Camera, "jpg"),
+                    SharedPrimary
+                )
+                MediaType.VIDEO -> mediaStoreClient.createVideoUri(
+                    generateFilename(Attachments.Camera, "mp4"),
+                    SharedPrimary
+                )
+            }
+
+            withContext(Dispatchers.Main) {
+                if (uri != null) callback(uri)
+            }
+        }
+    }
+
+    enum class MediaType {
+        IMAGE, VIDEO
+    }
+
+    private fun generateFilename(source: Attachments, extension: String): String {
+        return when (source) {
+            Attachments.Camera -> "camera-${System.currentTimeMillis()}.$extension"
+            Attachments.Gallery -> "gallery-${System.currentTimeMillis()}.$extension"
+        }
+    }
 
 }

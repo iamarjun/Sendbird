@@ -1,5 +1,7 @@
 package com.arjun.sendbird.ui
 
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
@@ -22,7 +24,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @Composable
 fun SendbirdApp(
     sendbirdViewModel: SendbirdViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    actionRequestPermission: ActivityResultLauncher<Array<String>>,
+    actionTakeImage: ActivityResultLauncher<Uri>,
+    actionTakeVideo: ActivityResultLauncher<Uri>
 ) {
     SendbirdTheme {
         NavHost(
@@ -52,6 +57,9 @@ fun SendbirdApp(
                     channelUrl = channelUrl,
                     sendbirdViewModel = sendbirdViewModel,
                     navController = navController,
+                    actionRequestPermission = actionRequestPermission,
+                    actionTakeImage = actionTakeImage,
+                    actionTakeVideo = actionTakeVideo
                 )
             }
         }

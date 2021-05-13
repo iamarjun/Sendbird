@@ -38,8 +38,10 @@ fun Login(
     val snackBarScope = rememberCoroutineScope()
 
     var userId by remember {
-        mutableStateOf("")
+        mutableStateOf("460465")
     }
+
+    sendbirdViewModel.login(userId = userId)
 
     if (state.isUserLoggedIn)
         navController.navigate("channel_list")
