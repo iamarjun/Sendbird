@@ -263,6 +263,8 @@ private fun MessageScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         Divider()
 
         MessageInput(
