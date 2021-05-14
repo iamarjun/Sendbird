@@ -184,8 +184,8 @@ class SendbirdViewModel @Inject constructor(
                         ToolBarState(
                             loading = false,
                             channel = channel,
-                            isOnline = false,
-                            showTypingStatus = false
+                            isOnline = isUserOnline,
+                            showTypingStatus = typingStatus
                         )
                     }.catch {
                         throw it
