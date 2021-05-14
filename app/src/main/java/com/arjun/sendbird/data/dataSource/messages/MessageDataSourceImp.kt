@@ -2,7 +2,6 @@ package com.arjun.sendbird.data.dataSource.messages
 
 import android.content.ContentResolver
 import android.net.Uri
-import androidx.core.net.toFile
 import com.arjun.media.MediaResource
 import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage
@@ -33,9 +32,13 @@ class MessageDataSourceImp @Inject constructor(
 
     private val localMessages = mutableListOf<BaseMessage>()
 
+    /**
+     * Compose doesn't recompose on same reference of the list
+     * see: https://stackoverflow.com/questions/66448722/jetpack-compose-lazycolumn-not-recomposing
+     */
     override suspend fun addMessage(message: BaseMessage) {
-        localMessages.add(0, message)
-        _messages.emit(localMessages)
+        val msg = localMessages.toMutableList().apply { add(0, message) }
+        _messages.emit(msg)
     }
 
     override suspend fun sendMessage(channel: GroupChannel, message: String) {
@@ -137,8 +140,11 @@ class MessageDataSourceImp @Inject constructor(
         }
 
         localMessages.addAll(messages)
-
-        _messages.emit(localMessages)
+        /**
+         * Compose doesn't recompose on same reference of the list
+         * see: https://stackoverflow.com/questions/66448722/jetpack-compose-lazycolumn-not-recomposing
+         */
+        _messages.emit(localMessages.toMutableList())
     }
 
 

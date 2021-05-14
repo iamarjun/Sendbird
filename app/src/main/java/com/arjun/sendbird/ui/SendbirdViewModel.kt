@@ -46,6 +46,7 @@ class SendbirdViewModel @Inject constructor(
 
     fun login(userId: String) {
         viewModelScope.launch {
+            _loginState.emit(LoginScreenState(isLoading = true))
             connectionDataSource.connect(userId).map { isUserLoggedIn ->
                 LoginScreenState(
                     isLoading = true,
