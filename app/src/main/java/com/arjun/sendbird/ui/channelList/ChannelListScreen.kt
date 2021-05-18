@@ -37,20 +37,20 @@ import com.sendbird.android.GroupChannel
 @ExperimentalAnimatedInsets
 @Composable
 fun ChannelList(
-    sendbirdViewModel: SendbirdViewModel,
+    viewModel: SendbirdViewModel,
     navController: NavController,
     scaffoldState: ScaffoldState = rememberScaffoldState()
 ) {
 
-    sendbirdViewModel.getChannels()
+    viewModel.getChannels()
 
-    val state by sendbirdViewModel.channelListState.collectAsState()
+    val state by viewModel.channelListState.collectAsState()
 
     Scaffold(
         topBar = {
             ToolBar(
                 logout = {
-                    sendbirdViewModel.logout {
+                    viewModel.logout {
                         navController.navigate("login")
                     }
                 }

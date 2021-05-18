@@ -1,11 +1,10 @@
 package com.arjun.sendbird.ui
 
-import android.net.Uri
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,11 +22,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
 @Composable
 fun SendbirdApp(
-    sendbirdViewModel: SendbirdViewModel,
+    viewModel: SendbirdViewModel = viewModel(),
     navController: NavHostController,
-    actionRequestPermission: ActivityResultLauncher<Array<String>>,
-    actionTakeImage: ActivityResultLauncher<Uri>,
-    actionTakeVideo: ActivityResultLauncher<Uri>
 ) {
     SendbirdTheme {
         NavHost(
@@ -36,14 +32,14 @@ fun SendbirdApp(
         ) {
             composable(route = "login") {
                 Login(
-                    sendbirdViewModel = sendbirdViewModel,
+                    viewModel = viewModel,
                     navController = navController
                 )
             }
 
             composable(route = "channel_list") {
                 ChannelList(
-                    sendbirdViewModel = sendbirdViewModel,
+                    viewModel = viewModel,
                     navController = navController
                 )
             }
@@ -55,11 +51,8 @@ fun SendbirdApp(
 
                 Message(
                     channelUrl = channelUrl,
-                    sendbirdViewModel = sendbirdViewModel,
+                    viewModel = viewModel,
                     navController = navController,
-                    actionRequestPermission = actionRequestPermission,
-                    actionTakeImage = actionTakeImage,
-                    actionTakeVideo = actionTakeVideo
                 )
             }
         }

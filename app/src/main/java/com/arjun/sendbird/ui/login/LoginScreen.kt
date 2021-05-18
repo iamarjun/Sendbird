@@ -29,26 +29,29 @@ import java.util.*
 
 @Composable
 fun Login(
-    sendbirdViewModel: SendbirdViewModel,
+    viewModel: SendbirdViewModel,
     navController: NavController,
     scaffoldState: ScaffoldState = rememberScaffoldState()
 ) {
-    val state by sendbirdViewModel.loginState.collectAsState()
+    val state by viewModel.loginState.collectAsState()
+
+    val scope = rememberCoroutineScope()
 
     val snackBarScope = rememberCoroutineScope()
 
     var userId by remember {
-        mutableStateOf("460465")
+        mutableStateOf("")
     }
 
-    sendbirdViewModel.login(userId = userId)
 
     if (state.isUserLoggedIn)
         navController.navigate("channel_list")
 
     if (state.error != null) {
-        LaunchedEffect(scaffoldState) {
-            scaffoldState.snackbarHostState.showSnackbar(state.error?.message?: "Something went wrong")
+        scope.launch {
+            scaffoldState.snackbarHostState.showSnackbar(
+                state.error?.message ?: "Something went wrong"
+            )
         }
     }
 
@@ -69,7 +72,7 @@ fun Login(
                     }
                     return@LoginScreen
                 }
-                sendbirdViewModel.login(userId = userId)
+                viewModel.login(userId = userId)
             },
             progressVisibility = state.isLoading
         )

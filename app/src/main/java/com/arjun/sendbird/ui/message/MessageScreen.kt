@@ -4,7 +4,8 @@ import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.net.Uri
 import android.os.Build
-import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -32,10 +33,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.arjun.media.canReadOwnEntriesInMediaStore
-import com.arjun.media.canReadSharedEntriesInMediaStore
-import com.arjun.media.canWriteOwnEntriesInMediaStore
-import com.arjun.media.canWriteSharedEntriesInMediaStore
+import com.arjun.media.*
 import com.arjun.sendbird.R
 import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.ui.SendbirdViewModel
@@ -58,26 +56,58 @@ import timber.log.Timber
 @ExperimentalMaterialApi
 @ExperimentalAnimatedInsets
 @ExperimentalFoundationApi
-
 @Composable
 fun Message(
     channelUrl: String,
-    sendbirdViewModel: SendbirdViewModel,
+    viewModel: SendbirdViewModel,
     navController: NavController,
-    actionRequestPermission: ActivityResultLauncher<Array<String>>,
-    actionTakeImage: ActivityResultLauncher<Uri>,
-    actionTakeVideo: ActivityResultLauncher<Uri>,
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 ) {
 
-    sendbirdViewModel.getChannel(channelUrl = channelUrl)
-    sendbirdViewModel.observeChannelState()
+    val actionRequestPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            viewModel.hasNecessaryPermission(it.values.all { it == true })
+        }
+
+    val actionTakeImage =
+        rememberLauncherForActivityResult(CustomTakePicture()) { success: Boolean ->
+
+            if (!success) {
+                Timber.e("Image taken FAIL")
+                return@rememberLauncherForActivityResult
+            }
+
+            Timber.d("Image taken SUCCESS")
+
+            if (viewModel.temporaryCameraImageUri == null) {
+                Timber.e("Can't find previously saved temporary Camera Image URI")
+            } else {
+                viewModel.setCurrentMedia(viewModel.temporaryCameraImageUri!!)
+                viewModel.clearTemporaryCameraImageUri()
+            }
+
+
+        }
+
+    val actionTakeVideo = rememberLauncherForActivityResult(CustomTakeVideo()) { uri: Uri? ->
+
+        if (uri == null) {
+            Timber.e("Video taken FAIL")
+            return@rememberLauncherForActivityResult
+        }
+
+        Timber.d("Video taken SUCCESS")
+//        viewModel.setCurrentMedia(uri)
+    }
+
+    viewModel.getChannel(channelUrl = channelUrl)
+    viewModel.observeChannelState()
 
     val coroutineScope = rememberCoroutineScope()
 
-    val messages by sendbirdViewModel.messages.collectAsState(initial = emptyList())
-    val toolbarState by sendbirdViewModel.toolbarState.collectAsState()
-    val hasNecessaryPermission by sendbirdViewModel.hasNecessaryPermission.collectAsState(initial = false)
+    val messages by viewModel.messages.collectAsState(initial = emptyList())
+    val toolbarState by viewModel.toolbarState.collectAsState()
+    val hasNecessaryPermission by viewModel.hasNecessaryPermission.collectAsState(initial = false)
 
     val handleAttachmentClick = {
         coroutineScope.launch {
@@ -118,8 +148,8 @@ fun Message(
             sheetContent = {
                 BottomSheet {
                     when (it) {
-                        Attachments.Camera -> sendbirdViewModel.createMediaUriForCamera(IMAGE) { uri ->
-                            sendbirdViewModel.saveTemporaryCameraImageUri(uri)
+                        Attachments.Camera -> viewModel.createMediaUriForCamera(IMAGE) { uri ->
+                            viewModel.saveTemporaryCameraImageUri(uri)
                             actionTakeImage.launch(uri)
                         }
                         Attachments.Gallery -> TODO()
@@ -138,13 +168,13 @@ fun Message(
                 channel = toolbarState.channel!!,
                 messages = messages,
                 message = message,
-                onChangeScrollPosition = sendbirdViewModel::onChangeScrollPosition,
+                onChangeScrollPosition = viewModel::onChangeScrollPosition,
                 onMessageChange = {
                     message = it
-                    sendbirdViewModel.sendTypingStatus(toolbarState.channel!!, it.isNotEmpty())
+                    viewModel.sendTypingStatus(toolbarState.channel!!, it.isNotEmpty())
                 },
                 onSendClick = {
-                    sendbirdViewModel.sendMessage(message = message)
+                    viewModel.sendMessage(message = message)
                     message = ""
                 },
                 onAttachmentClick = {
@@ -328,78 +358,3 @@ private fun BottomSheet(
 
     }
 }
-
-
-//class MessageFragment : BaseFragment() {
-//
-//    private val args by navArgs<MessageFragmentArgs>()
-//    private val channelUrl by lazy { args.channelUrl }
-//    private val viewModel by viewModels<MessageViewModel>()
-//    private val isTyping = MutableStateFlow(false)
-//
-//    private val attachmentHelper by lazy {
-//        AttachmentHelper(
-//            lifecycle,
-//            requireContext(),
-//            requireActivity().activityResultRegistry
-//        ) {
-//            Timber.d("Uri : $it")
-//            val fileInfo = FileUtils.getFileInfo(requireContext(), it) ?: return@AttachmentHelper
-//            viewModel.sendFileMessage(channelUrl, fileInfo)
-//        }
-//    }
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        viewModel.apply {
-//            loadMessages(channelUrl)
-//            getChannel(channelUrl)
-//            viewModel.typingStatus(channelUrl, isTyping)
-//        }
-//        attachmentHelper
-//    }
-//
-//
-//    override fun onPause() {
-//        super.onPause()
-//        isTyping.value = false
-//    }
-//
-//
-//}
-//
-//override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//    super.onViewCreated(view, savedInstanceState)
-//
-//
-//    viewModel.channelState.flowWithLifecycle(lifecycle).onEach { state ->
-//        when (state) {
-//            is ChannelState.ChannelUpdated -> {
-//
-//            }
-//            ChannelState.DeliveryReceiptUpdated -> {
-//
-//            }
-//            is ChannelState.MessageAdded -> {
-//                viewModel.addMessage(state.message)
-//            }
-//            is ChannelState.MessageDeleted -> {
-//
-//            }
-//            is ChannelState.MessageUpdated -> {
-//
-//            }
-//            ChannelState.ReadReceiptUpdated -> {
-//
-//            }
-//            is ChannelState.TypingStatusUpdated -> {
-//                viewModel.showTypingIndicator(state.typingUsers.isNotEmpty())
-//            }
-//        }
-//    }.launchIn(lifecycleScope)
-//
-//}
-//}
-//
-//fun LazyListState.isScrolledToTheEnd() =
-//    layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
