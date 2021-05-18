@@ -18,6 +18,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arjun.sendbird.R
+import com.arjun.sendbird.util.heightDp
 import com.arjun.sendbird.util.isMe
 import com.arjun.sendbird.util.timeStamp
 import com.arjun.sendbird.util.widthDp
@@ -49,7 +50,14 @@ fun FileMessageCard(
             ),
             modifier = Modifier
                 .padding(horizontal = 8.dp)
-                .widthIn(max = 200.dp),
+                .sizeIn(
+                    minWidth = LocalContext.current
+                        .widthDp()
+                        .times(0.5).dp,
+                    minHeight = LocalContext.current
+                        .heightDp()
+                        .times(0.5).dp
+                ),
             backgroundColor = when (message.isMe()) {
                 true -> colorResource(id = R.color.purple_50)
                 false -> colorResource(id = R.color.teal_50)
