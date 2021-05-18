@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-
+//TODO: Break this viewmodel into smaller viewmodels scoped to respective screen as soon as the bug is fixed
 @HiltViewModel
 class SendbirdViewModel @Inject constructor(
     private val connectionDataSource: ConnectionDataSource,
