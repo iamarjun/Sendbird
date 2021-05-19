@@ -15,10 +15,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
 import com.arjun.sendbird.R
-import com.arjun.sendbird.ui.SendbirdViewModel
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
 import kotlinx.coroutines.launch
 import java.util.*
@@ -29,8 +28,8 @@ import java.util.*
 
 @Composable
 fun Login(
-    viewModel: SendbirdViewModel,
     navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel(),
     scaffoldState: ScaffoldState = rememberScaffoldState()
 ) {
     val state by viewModel.loginState.collectAsState()

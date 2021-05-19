@@ -1,17 +1,13 @@
-package com.arjun.sendbird.ui
+package com.arjun.sendbird.ui.message
 
 import android.net.Uri
 import androidx.lifecycle.*
 import com.arjun.media.*
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
-import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
 import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.data.model.ChannelState
-import com.arjun.sendbird.ui.channelList.ChannelListState
-import com.arjun.sendbird.ui.login.LoginScreenState
-import com.arjun.sendbird.ui.message.ToolBarState
 import com.arjun.sendbird.util.PAGE_SIZE
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
@@ -21,94 +17,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-//TODO: Break this viewmodel into smaller viewmodels scoped to respective screen as soon as the bug is fixed
+
 @HiltViewModel
-class SendbirdViewModel @Inject constructor(
-    private val connectionDataSource: ConnectionDataSource,
+class MessageViewModel @Inject constructor(
     private val channelDataSource: ChannelDataSource,
     private val messageDataSource: MessageDataSource,
     private val userDataSource: UserDataSource,
     private val mediaStoreClient: MediaStoreClient,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
-    /**
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * -------------------------------------- LOGIN SCREEN -----------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     */
-
-
-    private val _loginState = MutableStateFlow(LoginScreenState(isLoading = false))
-    val loginState = _loginState.asStateFlow()
-
-    fun login(userId: String) {
-        viewModelScope.launch {
-            _loginState.emit(LoginScreenState(isLoading = true))
-            connectionDataSource.connect(userId).map { isUserLoggedIn ->
-                LoginScreenState(
-                    isLoading = true,
-                    isUserLoggedIn = isUserLoggedIn
-                )
-            }.catch {
-                LoginScreenState(
-                    isLoading = false,
-                    isUserLoggedIn = false,
-                    error = it
-                )
-            }.collect {
-                _loginState.value = it
-            }
-        }
-    }
-
-    /**
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * ----------------------------------- CHANNEL LIST SCREEN -------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     */
-
-    fun logout(onLogout: () -> Unit) {
-        viewModelScope.launch {
-            connectionDataSource.disconnect {
-                onLogout()
-            }
-        }
-    }
-
-    private val _channelListState = MutableStateFlow(ChannelListState(loading = true))
-    val channelListState = _channelListState.asStateFlow()
-
-
-    fun getChannels() {
-        viewModelScope.launch {
-            channelDataSource.loadChannels().map { channels ->
-                ChannelListState(
-                    loading = false,
-                    channelList = channels
-                )
-            }.catch {
-                throw it
-            }.collect {
-                _channelListState.value = it
-            }
-        }
-    }
-
-    /**
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * ------------------------------------- MESSAGES SCREEN ---------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     * ---------------------------------------------------------------------------------------------
-     */
-
-//    private val _messageScreenState = MutableStateFlow(MessageScreenState(loading = true))
-//    val messageScreenState = _messageScreenState.asStateFlow()
 
     private val _toolbarState = MutableStateFlow(ToolBarState(loading = true))
     val toolbarState = _toolbarState.asStateFlow()

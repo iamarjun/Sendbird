@@ -32,12 +32,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.arjun.media.*
 import com.arjun.sendbird.R
 import com.arjun.sendbird.data.model.Attachments
-import com.arjun.sendbird.ui.SendbirdViewModel
-import com.arjun.sendbird.ui.SendbirdViewModel.MediaType.IMAGE
+import com.arjun.sendbird.ui.message.MessageViewModel.MediaType.IMAGE
 import com.arjun.sendbird.ui.message.components.FileMessageCard
 import com.arjun.sendbird.ui.message.components.MessageInput
 import com.arjun.sendbird.ui.message.components.TextMessageCard
@@ -59,8 +59,8 @@ import timber.log.Timber
 @Composable
 fun Message(
     channelUrl: String,
-    viewModel: SendbirdViewModel,
     navController: NavController,
+    viewModel: MessageViewModel = hiltViewModel(),
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 ) {
 

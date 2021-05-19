@@ -23,9 +23,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val navController = rememberNavController()
             SendbirdApp(
-                navController = navController,
+                navController = rememberNavController(),
             )
         }
     }

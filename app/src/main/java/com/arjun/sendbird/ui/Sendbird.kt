@@ -4,7 +4,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,7 +21,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
 @Composable
 fun SendbirdApp(
-    viewModel: SendbirdViewModel = viewModel(),
     navController: NavHostController,
 ) {
     SendbirdTheme {
@@ -32,14 +30,12 @@ fun SendbirdApp(
         ) {
             composable(route = "login") {
                 Login(
-                    viewModel = viewModel,
                     navController = navController
                 )
             }
 
             composable(route = "channel_list") {
                 ChannelList(
-                    viewModel = viewModel,
                     navController = navController
                 )
             }
@@ -51,7 +47,6 @@ fun SendbirdApp(
 
                 Message(
                     channelUrl = channelUrl,
-                    viewModel = viewModel,
                     navController = navController,
                 )
             }

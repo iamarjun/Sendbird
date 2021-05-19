@@ -23,9 +23,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
-import com.arjun.sendbird.ui.SendbirdViewModel
 import com.arjun.sendbird.util.getHumanReadableDate
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
@@ -37,8 +36,8 @@ import com.sendbird.android.GroupChannel
 @ExperimentalAnimatedInsets
 @Composable
 fun ChannelList(
-    viewModel: SendbirdViewModel,
     navController: NavController,
+    viewModel: ChannelListViewModel = hiltViewModel(),
     scaffoldState: ScaffoldState = rememberScaffoldState()
 ) {
 
