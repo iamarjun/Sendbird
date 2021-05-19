@@ -40,7 +40,7 @@ android {
         useIR = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.0.0-beta06"
+        kotlinCompilerExtensionVersion = "1.0.0-beta07"
     }
     buildFeatures {
         viewBinding = true
@@ -59,18 +59,18 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.3.0-rc01")
 
-    implementation("androidx.compose.ui:ui:1.0.0-beta06")
-    implementation("androidx.compose.ui:ui-tooling:1.0.0-beta06")
-    implementation("androidx.compose.foundation:foundation:1.0.0-beta06")
-    implementation("androidx.compose.material:material:1.0.0-beta06")
-    implementation("androidx.compose.material:material-icons-core:1.0.0-beta06")
-    implementation("androidx.compose.material:material-icons-extended:1.0.0-beta06")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta06")
+    implementation("androidx.compose.ui:ui:1.0.0-beta07")
+    implementation("androidx.compose.ui:ui-tooling:1.0.0-beta07")
+    implementation("androidx.compose.foundation:foundation:1.0.0-beta07")
+    implementation("androidx.compose.material:material:1.0.0-beta07")
+    implementation("androidx.compose.material:material-icons-core:1.0.0-beta07")
+    implementation("androidx.compose.material:material-icons-extended:1.0.0-beta07")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta07")
 
-    implementation("androidx.activity:activity-compose:1.3.0-alpha07")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha06")
-    implementation("androidx.navigation:navigation-compose:1.0.0-alpha10")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha04")
+    implementation("androidx.activity:activity-compose:1.3.0-alpha08")
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha01")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha02")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha05")
 
     implementation("androidx.ui:ui-tooling:1.0.0-alpha07")
 
@@ -80,8 +80,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.35.1")
     kapt("com.google.dagger:hilt-compiler:2.35.1")
 
-    implementation("com.google.accompanist:accompanist-glide:0.9.1")
-    implementation("com.google.accompanist:accompanist-insets:0.9.1")
+    implementation("com.google.accompanist:accompanist-glide:0.10.0")
+    implementation("com.google.accompanist:accompanist-insets:0.10.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.9.1")
 
     implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
