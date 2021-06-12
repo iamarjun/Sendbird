@@ -2,13 +2,15 @@ package com.arjun.sendbird.ui.message
 
 import android.net.Uri
 import androidx.lifecycle.*
-import com.arjun.media.*
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
 import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.data.model.ChannelState
 import com.arjun.sendbird.util.PAGE_SIZE
+import com.google.modernstorage.mediastore.MediaResource
+import com.google.modernstorage.mediastore.MediaStoreClient
+import com.google.modernstorage.mediastore.SharedPrimary
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBird
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -226,6 +228,7 @@ class MessageViewModel @Inject constructor(
         return when (source) {
             Attachments.Camera -> "camera-${System.currentTimeMillis()}.$extension"
             Attachments.Gallery -> "gallery-${System.currentTimeMillis()}.$extension"
+
         }
     }
 

@@ -8,4 +8,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Sendbird"
 include(":app")
-include(":media")

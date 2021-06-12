@@ -2,7 +2,6 @@ package com.arjun.sendbird.di
 
 import android.content.ContentResolver
 import android.content.Context
-import com.arjun.media.MediaStoreClient
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSource
 import com.arjun.sendbird.data.dataSource.channel.ChannelDataSourceImp
 import com.arjun.sendbird.data.dataSource.connection.ConnectionDataSource
@@ -11,8 +10,7 @@ import com.arjun.sendbird.data.dataSource.messages.MessageDataSource
 import com.arjun.sendbird.data.dataSource.messages.MessageDataSourceImp
 import com.arjun.sendbird.data.dataSource.user.UserDataSource
 import com.arjun.sendbird.data.dataSource.user.UserDataSourceImp
-//import com.arjun.sendbird.repository.ChatRepository
-//import com.arjun.sendbird.repository.ChatRepositoryImpl
+import com.google.modernstorage.mediastore.MediaStoreClient
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

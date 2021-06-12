@@ -2,7 +2,7 @@ package com.arjun.sendbird.data.dataSource.messages
 
 import android.content.ContentResolver
 import android.net.Uri
-import com.arjun.media.MediaResource
+import com.google.modernstorage.mediastore.MediaResource
 import com.sendbird.android.BaseChannel
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage.ThumbnailSize
@@ -37,7 +37,8 @@ class MessageDataSourceImp @Inject constructor(
      * see: https://stackoverflow.com/questions/66448722/jetpack-compose-lazycolumn-not-recomposing
      */
     override suspend fun addMessage(message: BaseMessage) {
-        val msg = localMessages.toMutableList().apply { add(0, message) }
+        val msg = localMessages.toMutableList()
+        msg.add(0, message)
         _messages.emit(msg)
     }
 

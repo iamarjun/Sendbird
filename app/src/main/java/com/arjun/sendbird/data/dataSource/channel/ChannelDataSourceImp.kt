@@ -64,36 +64,40 @@ class ChannelDataSourceImp @Inject constructor() : ChannelDataSource {
     @ExperimentalCoroutinesApi
     override val channelState: Flow<ChannelState>
         get() = callbackFlow {
-            offer(ChannelState.Init)
+            this.trySend(ChannelState.Init).isSuccess
 
             val channelHandler = object : ChannelHandler() {
                 override fun onMessageReceived(baseChannel: BaseChannel, message: BaseMessage) {
-                    offer(ChannelState.MessageAdded(message = message))
+                    this@callbackFlow.trySend(ChannelState.MessageAdded(message = message)).isSuccess
                 }
 
                 override fun onMessageUpdated(channel: BaseChannel?, message: BaseMessage?) {
-                    offer(ChannelState.MessageUpdated(messageId = message?.messageId ?: 0L))
+                    this@callbackFlow.trySend(
+                        ChannelState.MessageUpdated(
+                            messageId = message?.messageId ?: 0L
+                        )
+                    ).isSuccess
                 }
 
                 override fun onMessageDeleted(channel: BaseChannel?, msgId: Long) {
-                    offer(ChannelState.MessageDeleted(messageId = msgId))
+                    this@callbackFlow.trySend(ChannelState.MessageDeleted(messageId = msgId)).isSuccess
                 }
 
                 override fun onChannelChanged(channel: BaseChannel) {
-                    offer(ChannelState.ChannelUpdated(channel))
+                    this@callbackFlow.trySend(ChannelState.ChannelUpdated(channel)).isSuccess
                 }
 
                 override fun onReadReceiptUpdated(channel: GroupChannel) {
-                    offer(ChannelState.ReadReceiptUpdated)
+                    this@callbackFlow.trySend(ChannelState.ReadReceiptUpdated).isSuccess
                 }
 
                 override fun onDeliveryReceiptUpdated(channel: GroupChannel) {
-                    offer(ChannelState.DeliveryReceiptUpdated)
+                    this@callbackFlow.trySend(ChannelState.DeliveryReceiptUpdated).isSuccess
                 }
 
                 override fun onTypingStatusUpdated(channel: GroupChannel) {
                     val users = channel.typingUsers
-                    offer(ChannelState.TypingStatusUpdated(users))
+                    this@callbackFlow.trySend(ChannelState.TypingStatusUpdated(users)).isSuccess
                 }
             }
 

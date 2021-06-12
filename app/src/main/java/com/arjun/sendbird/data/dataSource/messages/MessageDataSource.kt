@@ -1,10 +1,9 @@
 package com.arjun.sendbird.data.dataSource.messages
 
-import com.arjun.media.MediaResource
+import com.google.modernstorage.mediastore.MediaResource
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.GroupChannel
 import kotlinx.coroutines.flow.Flow
-import java.util.*
 
 interface MessageDataSource {
 

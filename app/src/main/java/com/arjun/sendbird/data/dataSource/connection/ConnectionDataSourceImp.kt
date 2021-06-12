@@ -52,7 +52,7 @@ class ConnectionDataSourceImp @Inject constructor(
                 override fun onReconnectStarted() {}
 
                 override fun onReconnectSucceeded() {
-                    offer(true)
+                    this@callbackFlow.trySend(true).isSuccess
                 }
 
                 override fun onReconnectFailed() {}
@@ -61,13 +61,13 @@ class ConnectionDataSourceImp @Inject constructor(
             SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, channelHandler)
 
             when (SendBird.getConnectionState()) {
-                SendBird.ConnectionState.OPEN -> offer(false)
+                SendBird.ConnectionState.OPEN -> this.trySend(false).isSuccess
 
-                SendBird.ConnectionState.CLOSED -> offer(
+                SendBird.ConnectionState.CLOSED -> this.trySend(
                     connect(
                         userManager.getUserId().first()
                     ).first()
-                )
+                ).isSuccess
 
                 else -> {
                 }

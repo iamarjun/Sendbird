@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.arjun.media.*
 import com.arjun.sendbird.R
 import com.arjun.sendbird.data.model.Attachments
 import com.arjun.sendbird.ui.message.MessageViewModel.MediaType.IMAGE
@@ -43,6 +42,7 @@ import com.arjun.sendbird.ui.message.components.MessageInput
 import com.arjun.sendbird.ui.message.components.TextMessageCard
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.insets.ExperimentalAnimatedInsets
+import com.google.modernstorage.mediastore.*
 import com.sendbird.android.BaseMessage
 import com.sendbird.android.FileMessage
 import com.sendbird.android.GroupChannel
@@ -97,7 +97,7 @@ fun Message(
         }
 
         Timber.d("Video taken SUCCESS")
-//        viewModel.setCurrentMedia(uri)
+        viewModel.setCurrentMedia(uri)
     }
 
     viewModel.getChannel(channelUrl = channelUrl)
